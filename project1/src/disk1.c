@@ -11,33 +11,32 @@
 
 int main(int argc, char *argv[])
 {
+    int n, file_no;
+    FILE *fp;
+    char dest_file_name[FNAME_SIZE];
+    char buf[BLOCK_SIZE];
 
-  int n, file_no;
-  FILE *fp;
-  char dest_file_name[FNAME_SIZE];
-  char buf[BLOCK_SIZE];
+    while (1) {
+        //file_no = rand() % MAX_FILE_NO;
+        file_no = 0;
 
-  while(1)
-    {
-      //file_no = rand() % MAX_FILE_NO;
-      file_no = 0;
+        bzero(dest_file_name, FNAME_SIZE);
+        sprintf(dest_file_name, "disk-files/foo%d.pdf", file_no);
 
-      bzero(dest_file_name, FNAME_SIZE);
-      sprintf(dest_file_name, "disk-files/foo%d.pdf", file_no);
+        fp = fopen(dest_file_name, "rb");
+        if (fp == NULL)
+        {
+            perror("Can't open dest file");
+            exit(1);
+        }
 
-      fp = fopen(dest_file_name, "rb");
-      if (fp == NULL) {
-	perror("Can't open dest file");
-	exit(1);
-      }
+        bzero(buf, BLOCK_SIZE);
+        while ((n = (int)fread(buf, 1, BLOCK_SIZE, fp)) > 0)
+        {
+            //do nothing with the read data;
+            bzero(buf, BLOCK_SIZE);
+        }
 
-      bzero(buf,BLOCK_SIZE);
-      while  ( (n = (int)fread( buf, 1, BLOCK_SIZE, fp )) > 0)
-	{
-	  //do nothing with the read data;
-	  bzero(buf,BLOCK_SIZE);
-	}
-
-       fclose(fp);
+        fclose(fp);
     }
 }
