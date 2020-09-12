@@ -50,14 +50,19 @@ int main(int argc, char* argv[]) {
         pid = fork();
         if (pid < 0) {
             fprintf(stderr,"fork error");
-        } else if (pid == 0) { // 자식 프로세스
+            // exit(1);
+        } else if (pid == 0) { // child
             execvp(tokens[0], tokens);
         }
 
-        pid = waitpid(pid, &status, 0);
+        pid = wait(&status); // wait for child to die
 
         if (pid < 0) {
-            fprintf(stderr, "waitpid error");
+            fprintf(stderr, "SSUShell : Incorrect command\n"); // exit(1);
+        } else {
+            if (WIFSIGNALED(status)) { // 자식 프로세스 비정상 종료
+                printf("✘");
+            }
         }
 
         // Freeing the allocated memory
