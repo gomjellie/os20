@@ -16,7 +16,7 @@ char **tokenize(char *line) {
     char *token = (char *)malloc(MAX_TOKEN_SIZE * sizeof(char));
     int i, tokenIndex = 0, tokenNo = 0;
 
-    for(i =0; i < strlen(line); i++) {
+    for(i = 0; i < strlen(line); i++) {
         char readChar = line[i];
 
         if (readChar == ' ' || readChar == '\n' || readChar == '\t') {
@@ -41,7 +41,7 @@ int main(int argc, char* argv[]) {
     char  **tokens;
     int i;
 
-    FILE* fp;
+    FILE *fp;
     if (argc == 2) {
         fp = fopen(argv[1], "r");
         if (fp < 0) {
