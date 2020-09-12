@@ -11,6 +11,11 @@
 #define MAX_NUM_TOKENS 64
 
 char **tokenize(char *line);
+#define TOKEN_DEL(TOKENS) \
+for (int i = 0; TOKENS[i] != NULL; i++) {\
+    free(TOKENS[i]); \
+} \
+free(TOKENS); \
 
 int main(int argc, char* argv[]) {
     char  line[MAX_INPUT_SIZE];
@@ -55,24 +60,23 @@ int main(int argc, char* argv[]) {
             int res = execvp(tokens[0], tokens);
             if (res == -1) {
                 fprintf(stderr, "SSUShell : Incorrect command\n");
+                TOKEN_DEL(tokens);
                 exit(1);
             }
-            exit(0);
+            TOKEN_DEL(tokens);
+            return 0;
         }
 
         pid = wait(&status); // wait for child to die
 
-        if (pid < 0) {
-            fprintf(stderr, "자식 프로세스가 제대로 종료되지 않음 status(%d)\n", status);
-        } else if (WIFSIGNALED(status)) { // 자식 프로세스 비정상 종료
-            fprintf(stderr, "✘");
-        }
+        // if (pid < 0) {
+        //     fprintf(stderr, "자식 프로세스가 제대로 종료되지 않음 status(%d)\n", status);
+        // } else if (WIFSIGNALED(status)) { // 자식 프로세스 비정상 종료
+        //     fprintf(stderr, "✘");
+        // }
 
         // Freeing the allocated memory
-        for(i = 0; tokens[i] != NULL; i++) {
-            free(tokens[i]);
-        }
-        free(tokens);
+        TOKEN_DEL(tokens);
     }
     return 0;
 }
