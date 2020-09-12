@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <errno.h>
 
 #define MAX_INPUT_SIZE 1024
 #define MAX_TOKEN_SIZE 64
@@ -49,20 +50,22 @@ int main(int argc, char* argv[]) {
 
         pid = fork();
         if (pid < 0) {
-            fprintf(stderr,"fork error");
-            // exit(1);
+            fprintf(stderr, "fork error");
         } else if (pid == 0) { // child
-            execvp(tokens[0], tokens);
+            int res = execvp(tokens[0], tokens);
+            if (res == -1) {
+                fprintf(stderr, "SSUShell : Incorrect command\n");
+                exit(1);
+            }
+            exit(0);
         }
 
         pid = wait(&status); // wait for child to die
 
         if (pid < 0) {
-            fprintf(stderr, "SSUShell : Incorrect command\n"); // exit(1);
-        } else {
-            if (WIFSIGNALED(status)) { // 자식 프로세스 비정상 종료
-                printf("✘");
-            }
+            fprintf(stderr, "자식 프로세스가 제대로 종료되지 않음 status(%d)\n", status);
+        } else if (WIFSIGNALED(status)) { // 자식 프로세스 비정상 종료
+            fprintf(stderr, "✘");
         }
 
         // Freeing the allocated memory
@@ -70,7 +73,6 @@ int main(int argc, char* argv[]) {
             free(tokens[i]);
         }
         free(tokens);
-
     }
     return 0;
 }
