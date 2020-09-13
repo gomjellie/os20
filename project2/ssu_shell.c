@@ -115,7 +115,7 @@ int main(int argc, char* argv[]) {
         }
 
         queue_del(pipe_queue);
-        for (int i = 0; i < token_len; i++) free(tokens[i]);
+        for (int i = 0; i < token_len; i++) if (tokens[i] != NULL) free(tokens[i]);
         free(tokens);
     }
     return 0;
