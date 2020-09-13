@@ -55,33 +55,7 @@ int main(int argc, char* argv[]) {
         //do whatever you want with the commands, here we just print them
 
         pid = fork();
-        if (pid < 0) {
-            fprintf(stderr, "fork error");
-        } else if (pid == 0) { // child
-            for (int i = 0; tokens[i] != NULL; i++) {
-                if (tokens[i][0] == '|') {
-                    pipe(pipefd);
-
-                    pid_t pipe_pid = fork();
-                    if (pipe_pid == -1) { /* say there's no error */ }
-                    else if (pipe_pid == 0) { // child
-                        dup2(pipefd[0], 0);
-                        close(pipefd[1]);
-                        int res = execvp(tokens[i + 1], tokens + i + 1);
-                        if (res == -1) {
-                            exit(1);
-                        }
-                        exit(0);
-                    } else {
-                        tokens[i] = NULL;
-                        dup2(pipefd[1], STDOUT_FILENO);
-                        int res = execvp(tokens[0], tokens);
-                        if (res == -1) exit(1);
-                        pipe_pid = wait(&status);
-                    }
-                    return 0;
-                }
-            }
+        if (pid == 0) { // child
             int res = execvp(tokens[0], tokens);
             if (res == -1) {
                 fprintf(stderr, "SSUShell : Incorrect command\n");
@@ -90,12 +64,11 @@ int main(int argc, char* argv[]) {
             }
             TOKEN_DEL(tokens);
             return 0;
+        } else {
+            pid = wait(&status); // wait for child to die
+
+            TOKEN_DEL(tokens);
         }
-
-        pid = wait(&status); // wait for child to die
-
-        // Freeing the allocated memory
-        TOKEN_DEL(tokens);
     }
     return 0;
 }
