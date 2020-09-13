@@ -25,42 +25,13 @@ typedef struct queue {
     int body[128];
 } queue_t;
 
-queue_t *queue_new() {
-    queue_t *this = malloc(sizeof(queue_t));
-    this->front = 0;
-    this->rear = 0;
-    return this;
-}
-
-void queue_push(queue_t *this, int elem) {
-    this->body[this->rear++] = elem;
-}
-
-int queue_back(queue_t *this) {
-    return this->body[this->rear];
-}
-
-int queue_front(queue_t *this) {
-    return this->body[this->front];
-}
-
-bool queue_pop(queue_t *this) {
-    if (this->front == this->rear) return false;
-    this->body[this->front++] = 0;
-    return true;
-}
-
-bool queue_empty(queue_t *this) {
-    return this->rear == this->front;
-}
-
-void queue_del(queue_t *this) {
-    free(this);
-}
-
-int queue_length(queue_t *this) {
-    return this->rear - this->front;
-}
+queue_t *queue_new();
+void queue_push(queue_t *this, int elem);
+int queue_front(queue_t *this);
+bool queue_pop(queue_t *this);
+bool queue_empty(queue_t *this);
+void queue_del(queue_t *this);
+int queue_length(queue_t *this);
 
 int main(int argc, char* argv[]) {
     char line[MAX_INPUT_SIZE];
@@ -178,4 +149,37 @@ char **tokenize(char *line) {
     free(token);
     tokens[tokenNo] = NULL;
     return tokens;
+}
+
+queue_t *queue_new() {
+    queue_t *this = malloc(sizeof(queue_t));
+    this->front = 0;
+    this->rear = 0;
+    return this;
+}
+
+void queue_push(queue_t *this, int elem) {
+    this->body[this->rear++] = elem;
+}
+
+int queue_front(queue_t *this) {
+    return this->body[this->front];
+}
+
+bool queue_pop(queue_t *this) {
+    if (this->front == this->rear) return false;
+    this->body[this->front++] = 0;
+    return true;
+}
+
+bool queue_empty(queue_t *this) {
+    return this->rear == this->front;
+}
+
+void queue_del(queue_t *this) {
+    free(this);
+}
+
+int queue_length(queue_t *this) {
+    return this->rear - this->front;
 }
