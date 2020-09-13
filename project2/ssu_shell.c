@@ -13,11 +13,6 @@
 #define MAX_NUM_PIPES  64
 
 char **tokenize(char *line);
-#define TOKEN_DEL(TOKENS) \
-for (int i = 0; TOKENS[i] != NULL; i++) {\
-    free(TOKENS[i]); \
-} \
-free(TOKENS); \
 
 typedef struct queue {
     int front;
@@ -35,7 +30,7 @@ int queue_length(queue_t *this);
 
 int main(int argc, char* argv[]) {
     char line[MAX_INPUT_SIZE];
-    char **tokens;
+    char **tokens; size_t token_len;
 
     FILE *fp;
     int pipefds[MAX_NUM_PIPES][2];
@@ -67,7 +62,8 @@ int main(int argc, char* argv[]) {
 
         line[strlen(line)] = '\n'; //terminate with new line
         tokens = tokenize(line);
-        //do whatever you want with the commands, here we just print them
+        for (int i = 0; tokens[i] != NULL; i++) token_len = i;
+
         queue_t *pipe_queue = queue_new(); // |가 tokens중에서 몇번째 인덱스에 있는지 스택에 저장
         
         if (tokens[0] != NULL) queue_push(pipe_queue, -1); // 빈 라인의 입력은 거른다.
@@ -119,6 +115,8 @@ int main(int argc, char* argv[]) {
         }
 
         queue_del(pipe_queue);
+        for (int i = 0; i < token_len; i++) free(tokens[i]);
+        free(tokens);
     }
     return 0;
 }
