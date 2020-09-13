@@ -98,7 +98,6 @@ int main(int argc, char* argv[]) {
         tokens = tokenize(line);
         //do whatever you want with the commands, here we just print them
         queue_t *pipe_queue = queue_new(); // |가 tokens중에서 몇번째 인덱스에 있는지 스택에 저장
-        int cmd_length;
         
         if (tokens[0] != NULL) queue_push(pipe_queue, -1); // 빈 라인의 입력은 거른다.
         for (int pipe_idx = 0; tokens[pipe_idx] != NULL; pipe_idx++) { 
@@ -108,24 +107,22 @@ int main(int argc, char* argv[]) {
             free(tokens[pipe_idx]);
             tokens[pipe_idx] = NULL;
         }
-        cmd_length = queue_length(pipe_queue);
+        int cmd_length = queue_length(pipe_queue); // ls | grep .c | wc 같은경우 cmd 3개니까 cmd_length = 3
 
         for (int i = 0; i < cmd_length; i++) {
             pipe(pipefds[i]);
         }
         
-        int cmdc = 0;
+        int cmdc = 0; // cmd counter
         while (!queue_empty(pipe_queue)) {
             cmdc++;
             pid = fork();
 
             if (pid == 0) {
-                if (cmdc) { // not the first command
+                if (cmdc) // not the first command
                     if (dup2(pipefds[cmdc - 1][0], 0) < 0) fprintf(stderr, "line 124: dup2() err");
-                }
-                if (cmdc != cmd_length) { // if not the last command
+                if (cmdc != cmd_length) // if not the last command
                     if (dup2(pipefds[cmdc][1], 1) < 0) fprintf(stderr, "line 127: dup2() err");
-                }
 
                 for (int i = 0; i < cmdc; i++) { close(pipefds[i][0]); close(pipefds[i][1]); }
                 
