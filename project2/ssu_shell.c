@@ -18,11 +18,12 @@ for (int i = 0; TOKENS[i] != NULL; i++) {\
 free(TOKENS); \
 
 int main(int argc, char* argv[]) {
-    char  line[MAX_INPUT_SIZE];
-    char  **tokens;
+    char line[MAX_INPUT_SIZE];
+    char **tokens;
     int i;
 
     FILE *fp;
+    int pipefd[2];
     pid_t pid;
     int status;
     if (argc == 2) {
@@ -57,6 +58,30 @@ int main(int argc, char* argv[]) {
         if (pid < 0) {
             fprintf(stderr, "fork error");
         } else if (pid == 0) { // child
+            for (int i = 0; tokens[i] != NULL; i++) {
+                if (tokens[i][0] == '|') {
+                    pipe(pipefd);
+
+                    pid_t pipe_pid = fork();
+                    if (pipe_pid == -1) { /* say there's no error */ }
+                    else if (pipe_pid == 0) { // child
+                        dup2(pipefd[0], 0);
+                        close(pipefd[1]);
+                        int res = execvp(tokens[i + 1], tokens + i + 1);
+                        if (res == -1) {
+                            exit(1);
+                        }
+                        exit(0);
+                    } else {
+                        tokens[i] = NULL;
+                        dup2(pipefd[1], STDOUT_FILENO);
+                        int res = execvp(tokens[0], tokens);
+                        if (res == -1) exit(1);
+                        pipe_pid = wait(&status);
+                    }
+                    return 0;
+                }
+            }
             int res = execvp(tokens[0], tokens);
             if (res == -1) {
                 fprintf(stderr, "SSUShell : Incorrect command\n");
@@ -68,12 +93,6 @@ int main(int argc, char* argv[]) {
         }
 
         pid = wait(&status); // wait for child to die
-
-        // if (pid < 0) {
-        //     fprintf(stderr, "자식 프로세스가 제대로 종료되지 않음 status(%d)\n", status);
-        // } else if (WIFSIGNALED(status)) { // 자식 프로세스 비정상 종료
-        //     fprintf(stderr, "✘");
-        // }
 
         // Freeing the allocated memory
         TOKEN_DEL(tokens);
