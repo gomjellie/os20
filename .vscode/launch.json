@@ -10,7 +10,7 @@
             "request": "launch",
             "program": "${fileDirname}/${fileBasenameNoExtension}",
             "args": [
-                // "${fileDirname}/commands.txt",
+                "${fileDirname}/commands.txt",
             ],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",

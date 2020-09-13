@@ -5,10 +5,12 @@
 #include <string.h>
 #include <unistd.h>
 #include <errno.h>
+#include <stdbool.h>
 
 #define MAX_INPUT_SIZE 1024
 #define MAX_TOKEN_SIZE 64
 #define MAX_NUM_TOKENS 64
+#define MAX_NUM_PIPES  64
 
 char **tokenize(char *line);
 #define TOKEN_DEL(TOKENS) \
@@ -17,13 +19,55 @@ for (int i = 0; TOKENS[i] != NULL; i++) {\
 } \
 free(TOKENS); \
 
+typedef struct queue {
+    int front;
+    int rear;
+    int body[128];
+} queue_t;
+
+queue_t *queue_new() {
+    queue_t *this = malloc(sizeof(queue_t));
+    this->front = 0;
+    this->rear = 0;
+    return this;
+}
+
+void queue_push(queue_t *this, int elem) {
+    this->body[this->rear++] = elem;
+}
+
+int queue_back(queue_t *this) {
+    return this->body[this->rear];
+}
+
+int queue_front(queue_t *this) {
+    return this->body[this->front];
+}
+
+bool queue_pop(queue_t *this) {
+    if (this->front == this->rear) return false;
+    this->body[this->front++] = 0;
+    return true;
+}
+
+bool queue_empty(queue_t *this) {
+    return this->rear == this->front;
+}
+
+void queue_del(queue_t *this) {
+    free(this);
+}
+
+int queue_length(queue_t *this) {
+    return this->rear - this->front;
+}
+
 int main(int argc, char* argv[]) {
     char line[MAX_INPUT_SIZE];
     char **tokens;
-    int i;
 
     FILE *fp;
-    int pipefd[2];
+    int pipefds[MAX_NUM_PIPES][2];
     pid_t pid;
     int status;
     if (argc == 2) {
@@ -53,22 +97,57 @@ int main(int argc, char* argv[]) {
         line[strlen(line)] = '\n'; //terminate with new line
         tokens = tokenize(line);
         //do whatever you want with the commands, here we just print them
-
-        pid = fork();
-        if (pid == 0) { // child
-            int res = execvp(tokens[0], tokens);
-            if (res == -1) {
-                fprintf(stderr, "SSUShell : Incorrect command\n");
-                TOKEN_DEL(tokens);
-                exit(1);
-            }
-            TOKEN_DEL(tokens);
-            return 0;
-        } else {
-            pid = wait(&status); // wait for child to die
-
-            TOKEN_DEL(tokens);
+        queue_t *pipe_queue = queue_new(); // |가 tokens중에서 몇번째 인덱스에 있는지 스택에 저장
+        int cmd_length;
+        
+        if (tokens[0] != NULL) queue_push(pipe_queue, -1); // 빈 라인의 입력은 거른다.
+        for (int pipe_idx = 0; tokens[pipe_idx] != NULL; pipe_idx++) { 
+            // |를 찾아서 NULL로 바꾸고 pipe_queue에 tokens 에서 |의 인덱스를 push
+            if (tokens[pipe_idx][0] != '|') continue; 
+            queue_push(pipe_queue, pipe_idx);
+            free(tokens[pipe_idx]);
+            tokens[pipe_idx] = NULL;
         }
+        cmd_length = queue_length(pipe_queue);
+
+        for (int i = 0; i < cmd_length; i++) {
+            pipe(pipefds[i]);
+        }
+        
+        int cmdc = 0;
+        while (!queue_empty(pipe_queue)) {
+            cmdc++;
+            pid = fork();
+
+            if (pid == 0) {
+                if (cmdc) { // not the first command
+                    if (dup2(pipefds[cmdc - 1][0], 0) < 0) fprintf(stderr, "line 124: dup2() err");
+                }
+                if (cmdc != cmd_length) { // if not the last command
+                    if (dup2(pipefds[cmdc][1], 1) < 0) fprintf(stderr, "line 127: dup2() err");
+                }
+
+                for (int i = 0; i < cmdc; i++) { close(pipefds[i][0]); close(pipefds[i][1]); }
+                
+                int div_index = queue_front(pipe_queue); // |의 인덱스
+                int res = execvp(tokens[div_index + 1], tokens + 1 + div_index);
+                if (res == -1) {
+                    fprintf(stderr, "SSUShell : Incorrect command\n");
+                    exit(1);
+                }
+            }
+            queue_pop(pipe_queue);
+        }
+
+        for (int i = 0; i < cmd_length; i++) {
+            close(pipefds[i][0]); close(pipefds[i][1]);
+        }
+
+        for (int i = 0; i < cmd_length; i++) {
+            wait(&status);
+        }
+
+        queue_del(pipe_queue);
     }
     return 0;
 }

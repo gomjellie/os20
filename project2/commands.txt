@@ -1,4 +1,5 @@
-echo Hello world
 ls
-pwd
-cat commands.txt
+ls | grep .c | wc -c
+ps | grep sh
+echo hello world
+ps
