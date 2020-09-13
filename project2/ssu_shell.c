@@ -118,20 +118,23 @@ int main(int argc, char* argv[]) {
             cmdc++;
             pid = fork();
 
-            if (pid == 0) {
-                if (cmdc) // not the first command
-                    if (dup2(pipefds[cmdc - 1][0], 0) < 0) fprintf(stderr, "line 124: dup2() err");
-                if (cmdc != cmd_length) // if not the last command
-                    if (dup2(pipefds[cmdc][1], 1) < 0) fprintf(stderr, "line 127: dup2() err");
+            if (pid != 0) {
+                queue_pop(pipe_queue);
+                continue;
+            }
 
-                for (int i = 0; i < cmdc; i++) { close(pipefds[i][0]); close(pipefds[i][1]); }
-                
-                int div_index = queue_front(pipe_queue); // |의 인덱스
-                int res = execvp(tokens[div_index + 1], tokens + 1 + div_index);
-                if (res == -1) {
-                    fprintf(stderr, "SSUShell : Incorrect command\n");
-                    exit(1);
-                }
+            if (cmdc) // not the first command
+                if (dup2(pipefds[cmdc - 1][0], 0) < 0) fprintf(stderr, "line 124: dup2() err");
+            if (cmdc != cmd_length) // if not the last command
+                if (dup2(pipefds[cmdc][1], 1) < 0) fprintf(stderr, "line 127: dup2() err");
+
+            for (int i = 0; i < cmdc; i++) { close(pipefds[i][0]); close(pipefds[i][1]); }
+
+            int div_index = queue_front(pipe_queue); // |의 인덱스
+            int res = execvp(tokens[div_index + 1], tokens + 1 + div_index);
+            if (res == -1) {
+                fprintf(stderr, "SSUShell : Incorrect command\n");
+                exit(1);
             }
             queue_pop(pipe_queue);
         }
