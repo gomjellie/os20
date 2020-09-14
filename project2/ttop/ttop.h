@@ -46,15 +46,8 @@ struct stat {
      double time;
 } typedef stat_t;
 
-/**
- * CPU 사용 퍼센트 계산
- */
+/* CPU 사용 퍼센트 계산 */
 double stat_calc_cpu_usage(stat_t *this);
-
-/**
- * 프로세스 실행 시간 계산
- */
-double get_seconds(unsigned long long starttime);
 
 /**
  * CPU 사용 퍼센트 기준 내림차순 정렬
@@ -62,20 +55,12 @@ double get_seconds(unsigned long long starttime);
  */
 int stat_cmp(const void *p1, const void *p2);
 
-/**
- * 디렉토리 이름이 숫자인지 확인 (PID 식별)
- */
-bool is_number(char input[]);
-
-/**
- * 프로세스 디렉토리를 받아서 stat 파일을 읽음.
- */
-void read_stat(char * path, int position, stat_t stats[]);
+/* stat 파일을 읽어서 stats[idx]를 갱신함. */
+void stat_update(char * path, int idx, stat_t stats[]);
 
 /**
  * /proc 디렉토리에서 검색
  * 이름의 숫자로 디렉토리를 확인합니다.
- * 찾은 디렉토리를 전달하는 read_print_stat 함수를 호출합니다.
  */
 void stat_parse(stat_t stats[], int *stat_length);
 
