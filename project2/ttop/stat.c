@@ -176,5 +176,6 @@ static void __stat_update_mem_usage(stat_t *this) {
     // system_freeram      = (uint64_t)(info.freeram * info.mem_unit);
     total_mem = (info.totalram * info.mem_unit);
 
+    this->shared = statm.shared;
     this->mem_usage = ((double)(statm.size)) * 100UL * 100UL / total_mem; // top 명령어랑 똑같은 값을 못구하겠음
 }

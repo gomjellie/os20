@@ -66,16 +66,26 @@ QUIT:
  */
 void on_draw(const stat_t stats[], const int stats_len, const view_t ttop_view) {
 //   PID USER      PR  NI    VIRT    RES    SHR S  %CPU  %MEM     TIME+ COMMAND     
+    mvprintw(0,  0, "top - 04:56:35 up  8:03,  0 users,  load average: 0.52, 0.58, 0.59");
+    mvprintw(1,  0, "Tasks:  %d total,   1 running,  11 sleeping,   0 stopped,   0 zombie", stats_len);
+    mvprintw(2,  0, "%%Cpu(s): 12.3 us,  5.2 sy,  0.0 ni, 82.1 id,  0.0 wa,  0.5 hi,  0.0 si,  0.0 st");
+    mvprintw(3,  0, "MiB Mem :  30822.0 total,  19477.0 free,  11121.0 used,    224.0 buff/cache");
+    mvprintw(4,  0, "MiB Swap:  29639.6 total,  29639.6 free,      0.0 used.  19562.7 avail Mem");
+    
     attron(COLOR_PAIR(ttop_view.label_color_schema));
-    mvprintw(0,  0, "   PID\t");
-    mvprintw(0,  6, "  PR\t");
-    mvprintw(0, 10, "  NI\t");
-    mvprintw(0, 15, " S\t");
-    mvprintw(0, 20, "  %%CPU\t");
-    mvprintw(0, 30, "  %%MEM\t");
-    mvprintw(0, 40, "   TIME+\t");
-    mvprintw(0, 50, "COMMAND");
+    mvprintw(ttop_view.body_top - 1,  0, "   PID");
+    mvprintw(ttop_view.body_top - 1,  6, "  PR");
+    mvprintw(ttop_view.body_top - 1, 10, "  NI\t\t");
+    mvprintw(ttop_view.body_top - 1, 19, "VIRT");
+    mvprintw(ttop_view.body_top - 1, 23, "   RES");
+    mvprintw(ttop_view.body_top - 1, 29, "    SHR\t\t");
+    mvprintw(ttop_view.body_top - 1, 37, "S\t");
+    mvprintw(ttop_view.body_top - 1, 40, "%%CPU\t");
+    mvprintw(ttop_view.body_top - 1, 46, "%%MEM\t");
+    mvprintw(ttop_view.body_top - 1, 55, "     TIME\t\t");
+    mvprintw(ttop_view.body_top - 1, 65, "COMMAND\t");
     attroff(COLOR_PAIR(ttop_view.label_color_schema));
+    use_default_colors();
     
     for (int i = ttop_view.scroll; i < stats_len && ttop_view.body_top + i - ttop_view.scroll < ttop_view.height; i++) {
         int hour = stats[i].time / 3600;
@@ -84,18 +94,21 @@ void on_draw(const stat_t stats[], const int stats_len, const view_t ttop_view) 
 
         mvprintw(ttop_view.body_top + i - ttop_view.scroll,  0, "%6d\t", stats[i].pid);
         mvprintw(ttop_view.body_top + i - ttop_view.scroll,  6, "%4ld\t", stats[i].priority);
-        mvprintw(ttop_view.body_top + i - ttop_view.scroll, 10, "%3ld\t", stats[i].nice);
-        mvprintw(ttop_view.body_top + i - ttop_view.scroll, 15, "%2c\t", stats[i].state);
-        mvprintw(ttop_view.body_top + i - ttop_view.scroll, 20, "%6.2f\t", stats[i].cpu_usage);
-        mvprintw(ttop_view.body_top + i - ttop_view.scroll, 30, "%6.2f\t", stats[i].mem_usage);
-        mvprintw(ttop_view.body_top + i - ttop_view.scroll, 40, "%02d:%02d:%02d\t", hour, minute, second);
-        mvprintw(ttop_view.body_top + i - ttop_view.scroll, 50, "%s\t", stats[i].command);
+        mvprintw(ttop_view.body_top + i - ttop_view.scroll, 10, "%4ld\t", stats[i].nice);
+        mvprintw(ttop_view.body_top + i - ttop_view.scroll, 15, "%10lu\t", (unsigned long)(stats[i].vsize / 1024UL));
+        mvprintw(ttop_view.body_top + i - ttop_view.scroll, 23, "%7ld\t", stats[i].rss);
+        mvprintw(ttop_view.body_top + i - ttop_view.scroll, 29, "%7d\t", stats[i].shared);
+        mvprintw(ttop_view.body_top + i - ttop_view.scroll, 37, "%1c\t", stats[i].state);
+        mvprintw(ttop_view.body_top + i - ttop_view.scroll, 40, "%3.2f\t", stats[i].cpu_usage);
+        mvprintw(ttop_view.body_top + i - ttop_view.scroll, 46, "%3.2f\t", stats[i].mem_usage);
+        mvprintw(ttop_view.body_top + i - ttop_view.scroll, 55, "%3d:%02d:%02d\t", hour, minute, second);
+        mvprintw(ttop_view.body_top + i - ttop_view.scroll, 65, "%s\t", stats[i].command);
     }
 }
 
 void view_init(view_t *this) {
     this->height = this->width = this->scroll = 0;
-    this->body_top = 1;
+    this->body_top = 7;
     this->label_color_schema = 1;
     this->body_color_schema = 2;
     init_pair(this->label_color_schema, COLOR_BLACK, COLOR_WHITE);
@@ -104,8 +117,7 @@ void view_init(view_t *this) {
 
 void view_scroll(view_t *this, direction_t to) {
     if (to == DOWN) {
-        if (this->scroll < this->height)
-            this->scroll ++;
+        this->scroll ++;
     }
     if (to == UP) {
         if (0 < this->scroll)

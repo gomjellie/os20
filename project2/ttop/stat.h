@@ -44,6 +44,7 @@ typedef struct stat {
      double cpu_usage;
      double mem_usage;
      double time;
+     size_t shared;
 } stat_t;
 
 void stat_update(stat_t *this, int pid);
