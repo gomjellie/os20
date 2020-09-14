@@ -5,13 +5,15 @@
  */
 static double get_seconds(unsigned long long starttime);
 static bool is_number(char input[]);
+static void stat_update_cpu_usage(stat_t *this);
 
 /**
- * CPU 사용 퍼센트 기준 정렬
+ * CPU 사용 퍼센트 기준 내림차순 정렬
+ * 퍼센트가 같을경우 pid기준 오름차순 정렬
  */
-int stat_cmp(const void *p1, const void *p2) {
-     const stat_t *s1 = p1;
-     const stat_t *s2 = p2;
+int stat_cmp(const void *stat1, const void *stat2) {
+     const stat_t *s1 = stat1;
+     const stat_t *s2 = stat2;
      
      if (s1->cpu_usage < s2->cpu_usage)
           return 1;
@@ -23,20 +25,6 @@ int stat_cmp(const void *p1, const void *p2) {
           return -1;
      }
      return -1;
-}
-
-/* CPU 사용 퍼센트 계산 */
-double stat_calc_cpu_usage(stat_t *this) {
-     long int total_time, clock_ticks;
-     double process_seconds = get_seconds(this->starttime);
-
-     clock_ticks = sysconf(_SC_CLK_TCK);
-     total_time = this->utime + this->stime + this->cutime;
-
-     if (clock_ticks == 0)
-          return 0.0; // 0으로 나눌 수 없음
-
-     return 100.0 * ((total_time / clock_ticks) / process_seconds);
 }
 
 /* /proc/<pid>/stat 파일을 읽어서 데이터 갱신 */
@@ -80,7 +68,7 @@ void stat_update(stat_t *this, char *pid) {
 
      fclose(file);
 
-     this->cpu_usage = stat_calc_cpu_usage(this);
+     stat_update_cpu_usage(this);
      this->time = get_seconds(this->starttime);
 
      free(pth);
@@ -148,4 +136,20 @@ static double get_seconds(unsigned long long starttime) {
      seconds = (double)(uptime - (starttime / clock_ticks));
 
      return seconds;
+}
+
+/* CPU 사용 퍼센트 계산후 업데이트 */
+static void stat_update_cpu_usage(stat_t *this) {
+     long int total_time, clock_ticks;
+     double process_seconds = get_seconds(this->starttime);
+
+     clock_ticks = sysconf(_SC_CLK_TCK);
+     total_time = this->utime + this->stime + this->cutime;
+
+     if (clock_ticks == 0) {
+          this->cpu_usage = 0.0;
+          return; // 0으로 나눌 수 없음
+     }
+
+     this->cpu_usage = 100.0 * ((total_time / clock_ticks) / process_seconds);
 }

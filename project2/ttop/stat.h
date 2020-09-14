@@ -46,9 +46,6 @@ struct stat {
      double time;
 } typedef stat_t;
 
-/* CPU 사용 퍼센트 계산 */
-double stat_calc_cpu_usage(stat_t *this);
-
 /* /proc/<pid>/stat 파일을 읽어서 데이터 갱신 */
 void stat_update(stat_t *this, char *pid);
 
@@ -56,7 +53,7 @@ void stat_update(stat_t *this, char *pid);
  * CPU 사용 퍼센트 기준 내림차순 정렬
  * 퍼센트가 같을경우 pid기준 오름차순 정렬
  */
-int stat_cmp(const void *p1, const void *p2);
+int stat_cmp(const void *stat1, const void *stat2);
 
 /**
  * /proc 디렉토리에서 숫자이름(pid)들을 찾아서 그 프로세스들의 stat을 업데이트
