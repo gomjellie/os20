@@ -11,9 +11,9 @@
 #ifndef __TTOP_H__
 #define __TTOP_H__
 
-#define BUFFER_LENGTH 30
+#define BUFFER_LENGTH 32
 
-struct stat {
+typedef struct stat {
      // /proc/PID/stat 에 있는 정보를 순서대로 나열함.
      int pid;
      char command[BUFFER_LENGTH];
@@ -44,7 +44,7 @@ struct stat {
      // 별도의 계산을 통해서 구해야하는 값들.
      double cpu_usage;
      double time;
-} typedef stat_t;
+} stat_t;
 
 /* /proc/<pid>/stat 파일을 읽어서 데이터 갱신 */
 void stat_update(stat_t *this, char *pid);
