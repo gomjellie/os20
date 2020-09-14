@@ -170,7 +170,7 @@ void read_stat(char *path, int position, stat_t stats[]) {
  * 이름의 숫자로 디렉토리를 확인합니다.
  * 찾은 디렉토리를 전달하는 read_print_stat 함수를 호출합니다.
  */
-void stat_parse(stat_t *stats[], int *stat_length) {
+void stat_parse(stat_t stats[], int *stat_length) {
      int i = 0;
      DIR *directory;
      struct dirent *dir;
@@ -191,7 +191,7 @@ void stat_parse(stat_t *stats[], int *stat_length) {
           strcat(current_path, directory_name_buffer);
           strcat(current_path, "/");
 
-          read_stat(current_path, i, *stats);
+          read_stat(current_path, i, stats);
           i ++;
      }
 
