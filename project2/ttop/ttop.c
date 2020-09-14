@@ -17,58 +17,23 @@ bool is_number(char input[]) {
 /**
  * CPU 사용 퍼센트 기준 정렬
  */
-void sort_proc(stat_t stats[], int n) {
-     stat_t aux;
-     int i = 0;
-     int j;
-
-     while (i < n) {
-          j = 0;
-          while (j < i) {
-               if (stats[j].cpu_usage < stats[i].cpu_usage) {
-                    aux = stats[j];
-                    stats[j] = stats[i];
-                    stats[i] = aux;
-               }
-               j = j + 1;
+int stat_cmp(const void *p1, const void *p2) {
+     const stat_t *s1 = p1;
+     const stat_t *s2 = p2;
+     
+     if (s1->cpu_usage < s2->cpu_usage) {
+          return 1;
+     }
+     if (s1->cpu_usage == s2->cpu_usage) {
+          if (s1->pid > s2->pid) {
+               return 1;
           }
-          i = i + 1;
+          if (s1->pid == s2->pid) {
+               return 0;
+          }
+          return -1;
      }
-}
-
-/**
- * 드로잉 함수
- */
-void on_draw(stat_t stats[], int stats_len) {
-     int hour, minute, second;
-
-     for (int i = 1; i < 70; i++) {
-          mvprintw(0, i, "=");
-     }
-
-     mvprintw(1,  0, "     PID |");
-     mvprintw(1, 10, "  PR |");
-     mvprintw(1, 16, "   S |");
-     mvprintw(1, 26, "    %%CPU |");
-     mvprintw(1, 41, "    TIME |");
-     mvprintw(1, 52, "COMMAND");
-
-     for (int i = 0; i < 70; i++) {
-          mvprintw(2, i, "=");
-     }
-
-     for (int i = 0; i < stats_len; i++) {
-          hour = stats[i].time / 3600;
-          minute = (stats[i].time - (3600 * hour)) / 60;
-          second = (stats[i].time - (3600 * hour) - (minute * 60));
-
-          mvprintw(i + 3,  0, "%8d |\t", stats[i].pid);
-          mvprintw(i + 3, 10, "%4ld |\t", stats[i].priority);
-          mvprintw(i + 3, 16, "%4c |\t", stats[i].state);
-          mvprintw(i + 3, 26, "%6.2f %% |\t", stats[i].cpu_usage);
-          mvprintw(i + 3, 41, "%02d:%02d:%02d |\t", hour, minute, second);
-          mvprintw(i + 3, 52, "%s\t", stats[i].command);
-     }
+     return -1;
 }
 
 /**

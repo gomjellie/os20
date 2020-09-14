@@ -57,9 +57,10 @@ double stat_calc_cpu_usage(stat_t *this);
 double get_seconds(unsigned long long starttime);
 
 /**
- * CPU 사용 퍼센트 기준 정렬
+ * CPU 사용 퍼센트 기준 내림차순 정렬
+ * 퍼센트가 같을경우 pid기준 오름차순 정렬
  */
-void sort_proc(stat_t stats[], int n);
+int stat_cmp(const void *p1, const void *p2);
 
 /**
  * 디렉토리 이름이 숫자인지 확인 (PID 식별)
@@ -77,7 +78,5 @@ void read_stat(char * path, int position, stat_t stats[]);
  * 찾은 디렉토리를 전달하는 read_print_stat 함수를 호출합니다.
  */
 void stat_parse(stat_t stats[], int *stat_length);
-
-void on_draw(stat_t stats[], int stats_len);
 
 #endif /* __TTOP_H__ */
