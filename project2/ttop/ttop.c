@@ -20,10 +20,11 @@ int main(int argc, char const * argv[]) {
     timeout(3000);
 
     stat_t *stats = malloc(sizeof(stat_t) * 256);
+    screen_t ttop_screen;
+    screen_init(&ttop_screen);
 
     while (true) {
         int stats_length;
-        screen_t ttop_screen;
         getmaxyx(stdscr, ttop_screen.height, ttop_screen.width);
         stats_update(stats, &stats_length);
 
@@ -45,29 +46,26 @@ int main(int argc, char const * argv[]) {
  * 드로잉 함수
  */
 void on_draw(const stat_t stats[], const int stats_len, const screen_t ttop_screen) {
-    for (int i = 1; i < 70; i++)
-        mvprintw(0, i, "=");
-    mvprintw(1,  0, "    PID |");
-    mvprintw(1, 10, "  PR |");
-    mvprintw(1, 16, "   S |");
-    mvprintw(1, 26, "    %%CPU |");
-    mvprintw(1, 41, "    TIME |");
-    mvprintw(1, 52, "COMMAND");
-
-    for (int i = 0; i < 70; i++) {
-        mvprintw(2, i, "=");
-    }
+//   PID USER      PR  NI    VIRT    RES    SHR S  %CPU  %MEM     TIME+ COMMAND     
+    mvprintw(0,  0, "   PID\t");
+    mvprintw(0,  5, "  PR\t");
+    mvprintw(0, 10, "  NI\t");
+    mvprintw(0, 15, " S\t");
+    mvprintw(0, 20, "  %%CPU\t");
+    mvprintw(0, 28, "   TIME+\t");
+    mvprintw(0, 52, "COMMAND");
 
     for (int i = 0; i < stats_len; i++) {
         int hour = stats[i].time / 3600;
         int minute = (stats[i].time - (3600 * hour)) / 60;
         int second = (stats[i].time - (3600 * hour) - (minute * 60));
 
-        mvprintw(i + 3,  0, "%8d |\t", stats[i].pid);
-        mvprintw(i + 3, 10, "%4ld |\t", stats[i].priority);
-        mvprintw(i + 3, 16, "%4c |\t", stats[i].state);
-        mvprintw(i + 3, 26, "%6.2f %% |\t", stats[i].cpu_usage);
-        mvprintw(i + 3, 41, "%02d:%02d:%02d |\t", hour, minute, second);
-        mvprintw(i + 3, 52, "%s\t", stats[i].command);
+        mvprintw(i + 1,  0, "%6d\t", stats[i].pid);
+        mvprintw(i + 1,  5, "%4ld\t", stats[i].priority);
+        mvprintw(i + 1, 10, "%3ld\t", stats[i].nice);
+        mvprintw(i + 1, 15, "%2c\t", stats[i].state);
+        mvprintw(i + 1, 20, "%6.2f\t", stats[i].cpu_usage);
+        mvprintw(i + 1, 28, "%02d:%02d:%02d\t", hour, minute, second);
+        mvprintw(i + 1, 52, "%s\t", stats[i].command);
     }
 }
