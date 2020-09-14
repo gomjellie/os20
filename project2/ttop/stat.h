@@ -5,7 +5,6 @@
 #include <dirent.h>
 #include <ctype.h>
 #include <stdbool.h>
-#include <ncurses.h>
 #include <time.h>
 
 #ifndef __TTOP_H__
@@ -43,10 +42,11 @@ typedef struct stat {
      // 아래 변수들은 /proc/PID/stat 에 있는 정보가 아님.
      // 별도의 계산을 통해서 구해야하는 값들.
      double cpu_usage;
+     double mem_usage;
      double time;
 } stat_t;
 
-void stat_update(stat_t *this, char *pid);
+void stat_update(stat_t *this, int pid);
 
 int stat_cmp(const void *stat1, const void *stat2);
 

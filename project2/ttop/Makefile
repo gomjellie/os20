@@ -1,7 +1,7 @@
 CC = gcc
 
 all:
-	$(CC) ttop.c stat.c -o ttop -Wall -pedantic -lncurses
+	$(CC) ttop.c stat.c statm.c -o ttop -Wall -pedantic -lncurses
 
 run:
 	./ttop
@@ -12,4 +12,4 @@ clean:
 	rm ttop;
 	
 debug:
-	$(CC) -g ttop.c stat.c -o ttop -Wall -pedantic -lncurses
+	$(CC) -g ttop.c stat.c statm.c -o ttop -Wall -pedantic -lncurses
