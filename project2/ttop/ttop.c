@@ -4,7 +4,7 @@
 typedef struct view {
     int height;
     int width;
-    int scroll; // y 축 스크롤정도를 나타냄, 위 아래키를 통해서 조정 가능
+    int scroll; // y 축 스크롤 위치를 나타냄, 화살표 방향키를 통해서 조정 가능
 } view_t;
 
 typedef enum direction {

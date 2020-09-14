@@ -1,8 +1,5 @@
 #include "stat.h"
 
-/**
- * private functions
- */
 static double get_seconds(unsigned long long starttime);
 static bool is_number(char input[]);
 static void stat_update_cpu_usage(stat_t *this);
@@ -38,8 +35,6 @@ void stat_update(stat_t *this, char *pid) {
      if (!file)
           return;
 
-     // 0   1    2 3 4 5 6 7 8 9 0 1 2 3  4 5 6  7 8 9 0 1      22       23                   24 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
-     // 1 (init) S 0 1 1 0 0 0 0 0 0 0 0 12 0 0 20 0 2 0 0 950688743424 103 18446744073709551615 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
      fscanf(file, "%d %s %c %d %d %d %d %d %u %lu %lu %lu %lu %lu %lu %ld %ld %ld %ld %ld %ld %llu %lu %ld",
           &this->pid,         //  0st , pid          %d  ,
           this->command,      //  1st , comm         %s  , (zsh)
