@@ -10,7 +10,8 @@ static void __stat_update_mem_usage(stat_t *this);
 
 /**
  * CPU 사용 퍼센트 기준 내림차순 정렬
- * 퍼센트가 같을경우 pid기준 오름차순 정렬
+ * 퍼센트가 같을경우 MEM 기준 내림차순
+ * 퍼센트 같을경우 pid기준 오름차순 정렬
  */
 int stat_cmp(const void *stat1, const void *stat2) {
     const stat_t *s1 = stat1;
@@ -19,10 +20,15 @@ int stat_cmp(const void *stat1, const void *stat2) {
     if (s1->cpu_usage < s2->cpu_usage)
         return 1;
     if (s1->cpu_usage == s2->cpu_usage) {
-        if (s1->pid > s2->pid)
+        if (s1->mem_usage < s2->mem_usage)
             return 1;
-        if (s1->pid == s2->pid)
-            return 0;
+        if (s1->mem_usage == s2->mem_usage) {
+            if (s1->pid > s2->pid)
+                return 1;
+            if (s1->pid == s2->pid)
+                return 0;
+            return -1;
+        }
         return -1;
     }
     return -1;
@@ -169,5 +175,5 @@ static void __stat_update_mem_usage(stat_t *this) {
     // system_freeram      = (uint64_t)(info.freeram * info.mem_unit);
     total_mem = (info.totalram * info.mem_unit);
 
-    this->mem_usage = ((unsigned long)(statm.resident + statm.data)) * 4096UL * 100UL / total_mem;
+    this->mem_usage = ((unsigned long)(statm.resident + statm.data)) * 1024UL * 100UL / total_mem;
 }
