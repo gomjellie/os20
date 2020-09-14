@@ -11,21 +11,8 @@ typedef enum direction {
     UP, DOWN
 } direction_t;
 
-void view_init(view_t *this) {
-    this->height = this->width = this->scroll = 0;
-}
-
-void view_scroll(view_t *this, direction_t to) {
-    if (to == DOWN) {
-        if (this->scroll < this->height)
-            this->scroll ++;
-    }
-    if (to == UP) {
-        if (0 < this->scroll)
-            this->scroll --;
-    }
-}
-
+void view_init(view_t *this);
+void view_scroll(view_t *this, direction_t to);
 void on_draw(const stat_t stats[], const int stats_len, const view_t ttop_view);
 
 int main(int argc, char const * argv[]) {
@@ -50,6 +37,7 @@ int main(int argc, char const * argv[]) {
         int ch = getch();
         switch (ch) {
             case 'q':
+            case 'Q':
             goto QUIT;
             case KEY_UP:
             view_scroll(&ttop_view, UP);
@@ -92,5 +80,20 @@ void on_draw(const stat_t stats[], const int stats_len, const view_t ttop_view) 
         mvprintw(i + 1 - ttop_view.scroll, 20, "%6.2f\t", stats[i].cpu_usage);
         mvprintw(i + 1 - ttop_view.scroll, 30, "%02d:%02d:%02d\t", hour, minute, second);
         mvprintw(i + 1 - ttop_view.scroll, 40, "%s\t", stats[i].command);
+    }
+}
+
+void view_init(view_t *this) {
+    this->height = this->width = this->scroll = 0;
+}
+
+void view_scroll(view_t *this, direction_t to) {
+    if (to == DOWN) {
+        if (this->scroll < this->height)
+            this->scroll ++;
+    }
+    if (to == UP) {
+        if (0 < this->scroll)
+            this->scroll --;
     }
 }
