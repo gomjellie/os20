@@ -47,7 +47,6 @@ int main(int argc, char const * argv[]) {
         qsort(stats, stats_length, sizeof(stat_t), stat_cmp);
         clear();
         on_draw(stats, stats_length, ttop_view);
-        refresh();
         int ch = getch();
         switch (ch) {
             case 'q':
@@ -59,8 +58,6 @@ int main(int argc, char const * argv[]) {
             view_scroll(&ttop_view, DOWN);
             break;
         }
-        // if (ch == 'q') break;
-
     }
 
 QUIT:
