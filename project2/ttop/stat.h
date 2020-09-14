@@ -49,7 +49,7 @@ struct stat {
 /* CPU 사용 퍼센트 계산 */
 double stat_calc_cpu_usage(stat_t *this);
 
-/* stat 파일을 읽어서 데이터 갱신 */
+/* /proc/<pid>/stat 파일을 읽어서 데이터 갱신 */
 void stat_update(stat_t *this, char *pid);
 
 /**

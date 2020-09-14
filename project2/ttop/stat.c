@@ -91,26 +91,26 @@ void stat_update(stat_t *this, char *pid) {
  * stat_length 로 읽어온 pid개수를 저장해서 호출자에게 넘겨줌.
  */
 void stats_update(stat_t stats[], int *stats_length) {
-     int i = 0;
+     int len = 0;
      DIR *directory;
      struct dirent *dir;
-     char *directory_name_buffer;
+     char *pid_buffer;
 
      directory = opendir("/proc");
 
      if (directory == NULL) return;
 
-     while ((dir = readdir(directory)) != NULL && i < 300) {
-          directory_name_buffer = dir->d_name;
+     while ((dir = readdir(directory)) != NULL && len < 256) {
+          pid_buffer = dir->d_name;
 
-          if (is_number(directory_name_buffer) == false)
+          if (is_number(pid_buffer) == false)
                continue;
 
-          stat_update(&stats[i], directory_name_buffer);
-          i ++;
+          stat_update(&stats[len], pid_buffer);
+          len ++;
      }
 
-     *stats_length = i;
+     *stats_length = len;
 }
 
 /* 디렉토리 이름이 숫자인지 확인 (PID 식별) */
