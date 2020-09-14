@@ -83,7 +83,7 @@ void on_draw(const stat_t stats[], const int stats_len, const view_t ttop_view) 
     mvprintw(0, 30, "   TIME+\t");
     mvprintw(0, 40, "COMMAND");
 
-    for (int i = ttop_view.scroll; i < stats_len && i < ttop_view.height - 1; i++) {
+    for (int i = ttop_view.scroll; i < stats_len && i + 1 - ttop_view.scroll < ttop_view.height; i++) {
         int hour = stats[i].time / 3600;
         int minute = (stats[i].time - (3600 * hour)) / 60;
         int second = (stats[i].time - (3600 * hour) - (minute * 60));
