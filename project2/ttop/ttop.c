@@ -8,6 +8,8 @@ typedef struct view {
     int width;
     int scroll; // y 축 스크롤 위치를 나타냄, 화살표 방향키를 통해서 조정 가능
     int body_top; // process들이 표시되는 body 시작 y좌표
+    int label_color_schema; // PID USER PR ... 라벨쪽 색상
+    int body_color_schema;
 } view_t;
 
 typedef enum direction {
@@ -23,6 +25,7 @@ int main(int argc, char const * argv[]) {
     keypad(stdscr, TRUE);
     noecho();
     curs_set(false);
+    start_color();
     timeout(3000);
 
     stat_t *stats = malloc(sizeof(stat_t) * 256);
@@ -63,6 +66,7 @@ QUIT:
  */
 void on_draw(const stat_t stats[], const int stats_len, const view_t ttop_view) {
 //   PID USER      PR  NI    VIRT    RES    SHR S  %CPU  %MEM     TIME+ COMMAND     
+    attron(COLOR_PAIR(ttop_view.label_color_schema));
     mvprintw(0,  0, "   PID\t");
     mvprintw(0,  6, "  PR\t");
     mvprintw(0, 10, "  NI\t");
@@ -71,7 +75,8 @@ void on_draw(const stat_t stats[], const int stats_len, const view_t ttop_view) 
     mvprintw(0, 30, "  %%MEM\t");
     mvprintw(0, 40, "   TIME+\t");
     mvprintw(0, 50, "COMMAND");
-
+    attroff(COLOR_PAIR(ttop_view.label_color_schema));
+    
     for (int i = ttop_view.scroll; i < stats_len && ttop_view.body_top + i - ttop_view.scroll < ttop_view.height; i++) {
         int hour = stats[i].time / 3600;
         int minute = (stats[i].time - (3600 * hour)) / 60;
@@ -91,6 +96,10 @@ void on_draw(const stat_t stats[], const int stats_len, const view_t ttop_view) 
 void view_init(view_t *this) {
     this->height = this->width = this->scroll = 0;
     this->body_top = 1;
+    this->label_color_schema = 1;
+    this->body_color_schema = 2;
+    init_pair(this->label_color_schema, COLOR_BLACK, COLOR_WHITE);
+    init_pair(this->body_color_schema, COLOR_WHITE, COLOR_BLACK);
 }
 
 void view_scroll(view_t *this, direction_t to) {
