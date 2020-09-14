@@ -158,7 +158,7 @@ static void __stat_update_cpu_usage(stat_t *this) {
 }
 
 static void __stat_update_mem_usage(stat_t *this) {
-    long int total_mem; // TODO:
+    unsigned long total_mem; // TODO:
     statm_t statm;
     statm_update(&statm, this->pid);
 
@@ -169,5 +169,5 @@ static void __stat_update_mem_usage(stat_t *this) {
     // system_freeram      = (uint64_t)(info.freeram * info.mem_unit);
     total_mem = (info.totalram * info.mem_unit);
 
-    this->mem_usage = (statm.resident + statm.data) * 100 / total_mem;
+    this->mem_usage = ((unsigned long)(statm.resident + statm.data)) * 4096UL * 100UL / total_mem;
 }
