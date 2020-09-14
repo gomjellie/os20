@@ -48,12 +48,12 @@ int main(int argc, char const * argv[]) {
 void on_draw(const stat_t stats[], const int stats_len, const view_t ttop_view) {
 //   PID USER      PR  NI    VIRT    RES    SHR S  %CPU  %MEM     TIME+ COMMAND     
     mvprintw(0,  0, "   PID\t");
-    mvprintw(0,  5, "  PR\t");
+    mvprintw(0,  6, "  PR\t");
     mvprintw(0, 10, "  NI\t");
     mvprintw(0, 15, " S\t");
     mvprintw(0, 20, "  %%CPU\t");
-    mvprintw(0, 28, "   TIME+\t");
-    mvprintw(0, 52, "COMMAND");
+    mvprintw(0, 30, "   TIME+\t");
+    mvprintw(0, 40, "COMMAND");
 
     for (int i = 0; i < stats_len; i++) {
         int hour = stats[i].time / 3600;
@@ -61,11 +61,11 @@ void on_draw(const stat_t stats[], const int stats_len, const view_t ttop_view) 
         int second = (stats[i].time - (3600 * hour) - (minute * 60));
 
         mvprintw(i + 1,  0, "%6d\t", stats[i].pid);
-        mvprintw(i + 1,  5, "%4ld\t", stats[i].priority);
+        mvprintw(i + 1,  6, "%4ld\t", stats[i].priority);
         mvprintw(i + 1, 10, "%3ld\t", stats[i].nice);
         mvprintw(i + 1, 15, "%2c\t", stats[i].state);
         mvprintw(i + 1, 20, "%6.2f\t", stats[i].cpu_usage);
-        mvprintw(i + 1, 28, "%02d:%02d:%02d\t", hour, minute, second);
-        mvprintw(i + 1, 52, "%s\t", stats[i].command);
+        mvprintw(i + 1, 30, "%02d:%02d:%02d\t", hour, minute, second);
+        mvprintw(i + 1, 40, "%s\t", stats[i].command);
     }
 }
