@@ -4,28 +4,28 @@
 void on_draw(stat_t stats[], int stats_len);
 
 int main(int argc, char const * argv[]) {
-	initscr();
-	noecho();
-	curs_set(false);
-	timeout(3000);
+    initscr();
+    noecho();
+    curs_set(false);
+    timeout(3000);
 
-	while (true) {
-		stat_t *stats = malloc(sizeof(stat_t) * 300);
-		int stat_length;
-		stat_parse(stats, &stat_length);
-		
-		qsort(stats, stat_length, sizeof(stat_t), stat_cmp);
-     	on_draw(stats, stat_length);
-		refresh();
-		int ch = getch();
-		if (ch == 'q') break;
-		
-		free(stats);
-	}
-	
-	endwin();
+    while (true) {
+        stat_t *stats = malloc(sizeof(stat_t) * 300);
+        int stat_length;
+        stat_parse(stats, &stat_length);
+        
+        qsort(stats, stat_length, sizeof(stat_t), stat_cmp);
+          on_draw(stats, stat_length);
+        refresh();
+        int ch = getch();
+        if (ch == 'q') break;
+        
+        free(stats);
+    }
+    
+    endwin();
 
-	return 0;
+    return 0;
 }
 
 /**
