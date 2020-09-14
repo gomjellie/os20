@@ -11,7 +11,7 @@ void screen_init(view_t *this) {
     this->height = this->width = this->scroll = 0;
 }
 
-void on_draw(const stat_t stats[], const int stats_len, const view_t ttop_screen);
+void on_draw(const stat_t stats[], const int stats_len, const view_t ttop_view);
 
 int main(int argc, char const * argv[]) {
     initscr();
@@ -20,16 +20,16 @@ int main(int argc, char const * argv[]) {
     timeout(3000);
 
     stat_t *stats = malloc(sizeof(stat_t) * 256);
-    view_t ttop_screen;
-    screen_init(&ttop_screen);
+    view_t ttop_view;
+    screen_init(&ttop_view);
 
     while (true) {
         int stats_length;
-        getmaxyx(stdscr, ttop_screen.height, ttop_screen.width);
+        getmaxyx(stdscr, ttop_view.height, ttop_view.width);
         stats_update(stats, &stats_length);
 
         qsort(stats, stats_length, sizeof(stat_t), stat_cmp);
-        on_draw(stats, stats_length, ttop_screen);
+        on_draw(stats, stats_length, ttop_view);
         refresh();
         int ch = getch();
         if (ch == 'q') break;
@@ -45,7 +45,7 @@ int main(int argc, char const * argv[]) {
 /**
  * 드로잉 함수
  */
-void on_draw(const stat_t stats[], const int stats_len, const view_t ttop_screen) {
+void on_draw(const stat_t stats[], const int stats_len, const view_t ttop_view) {
 //   PID USER      PR  NI    VIRT    RES    SHR S  %CPU  %MEM     TIME+ COMMAND     
     mvprintw(0,  0, "   PID\t");
     mvprintw(0,  5, "  PR\t");
