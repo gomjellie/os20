@@ -19,7 +19,7 @@ int main(int argc, char const * argv[]) {
     curs_set(false);
     timeout(3000);
 
-    stat_t *stats = malloc(sizeof(stat_t) * 300);
+    stat_t *stats = malloc(sizeof(stat_t) * 256);
 
     while (true) {
         int stats_length;
