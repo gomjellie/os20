@@ -9,8 +9,9 @@ int main(int argc, char const * argv[]) {
     curs_set(false);
     timeout(3000);
 
+    stat_t *stats = malloc(sizeof(stat_t) * 300);
+
     while (true) {
-        stat_t *stats = malloc(sizeof(stat_t) * 300);
         int stat_length;
         stat_parse(stats, &stat_length);
 
@@ -20,10 +21,10 @@ int main(int argc, char const * argv[]) {
         int ch = getch();
         if (ch == 'q') break;
 
-        free(stats);
     }
     
     endwin();
+    free(stats);
 
     return 0;
 }
