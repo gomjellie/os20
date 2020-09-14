@@ -7,6 +7,7 @@ typedef struct view {
     int height;
     int width;
     int scroll; // y 축 스크롤 위치를 나타냄, 화살표 방향키를 통해서 조정 가능
+    int body_top; // process들이 표시되는 body 시작 y좌표
 } view_t;
 
 typedef enum direction {
@@ -71,24 +72,25 @@ void on_draw(const stat_t stats[], const int stats_len, const view_t ttop_view) 
     mvprintw(0, 40, "   TIME+\t");
     mvprintw(0, 50, "COMMAND");
 
-    for (int i = ttop_view.scroll; i < stats_len && i + 1 - ttop_view.scroll < ttop_view.height; i++) {
+    for (int i = ttop_view.scroll; i < stats_len && ttop_view.body_top + i - ttop_view.scroll < ttop_view.height; i++) {
         int hour = stats[i].time / 3600;
         int minute = (stats[i].time - (3600 * hour)) / 60;
         int second = (stats[i].time - (3600 * hour) - (minute * 60));
 
-        mvprintw(i + 1 - ttop_view.scroll,  0, "%6d\t", stats[i].pid);
-        mvprintw(i + 1 - ttop_view.scroll,  6, "%4ld\t", stats[i].priority);
-        mvprintw(i + 1 - ttop_view.scroll, 10, "%3ld\t", stats[i].nice);
-        mvprintw(i + 1 - ttop_view.scroll, 15, "%2c\t", stats[i].state);
-        mvprintw(i + 1 - ttop_view.scroll, 20, "%6.2f\t", stats[i].cpu_usage);
-        mvprintw(i + 1 - ttop_view.scroll, 30, "%6.2f\t", stats[i].mem_usage);
-        mvprintw(i + 1 - ttop_view.scroll, 40, "%02d:%02d:%02d\t", hour, minute, second);
-        mvprintw(i + 1 - ttop_view.scroll, 50, "%s\t", stats[i].command);
+        mvprintw(ttop_view.body_top + i - ttop_view.scroll,  0, "%6d\t", stats[i].pid);
+        mvprintw(ttop_view.body_top + i - ttop_view.scroll,  6, "%4ld\t", stats[i].priority);
+        mvprintw(ttop_view.body_top + i - ttop_view.scroll, 10, "%3ld\t", stats[i].nice);
+        mvprintw(ttop_view.body_top + i - ttop_view.scroll, 15, "%2c\t", stats[i].state);
+        mvprintw(ttop_view.body_top + i - ttop_view.scroll, 20, "%6.2f\t", stats[i].cpu_usage);
+        mvprintw(ttop_view.body_top + i - ttop_view.scroll, 30, "%6.2f\t", stats[i].mem_usage);
+        mvprintw(ttop_view.body_top + i - ttop_view.scroll, 40, "%02d:%02d:%02d\t", hour, minute, second);
+        mvprintw(ttop_view.body_top + i - ttop_view.scroll, 50, "%s\t", stats[i].command);
     }
 }
 
 void view_init(view_t *this) {
     this->height = this->width = this->scroll = 0;
+    this->body_top = 1;
 }
 
 void view_scroll(view_t *this, direction_t to) {
