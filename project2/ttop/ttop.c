@@ -95,12 +95,12 @@ void on_draw(const stat_t stats[], const int stats_len, const view_t ttop_view) 
         mvprintw(ttop_view.body_top + i - ttop_view.scroll,  0, "%6d\t", stats[i].pid);
         mvprintw(ttop_view.body_top + i - ttop_view.scroll,  6, "%4ld\t", stats[i].priority);
         mvprintw(ttop_view.body_top + i - ttop_view.scroll, 10, "%4ld\t", stats[i].nice);
-        mvprintw(ttop_view.body_top + i - ttop_view.scroll, 15, "%10lu\t", (unsigned long)(stats[i].vsize / 1024UL));
+        mvprintw(ttop_view.body_top + i - ttop_view.scroll, 19, "%5lu\t", (unsigned long)(stats[i].vsize / 1024UL));
         mvprintw(ttop_view.body_top + i - ttop_view.scroll, 23, "%7ld\t", stats[i].rss);
         mvprintw(ttop_view.body_top + i - ttop_view.scroll, 29, "%7d\t", stats[i].shared);
         mvprintw(ttop_view.body_top + i - ttop_view.scroll, 37, "%1c\t", stats[i].state);
-        mvprintw(ttop_view.body_top + i - ttop_view.scroll, 40, "%3.2f\t", stats[i].cpu_usage);
-        mvprintw(ttop_view.body_top + i - ttop_view.scroll, 46, "%3.2f\t", stats[i].mem_usage);
+        mvprintw(ttop_view.body_top + i - ttop_view.scroll, 40, "%2.2f\t", stats[i].cpu_usage);
+        mvprintw(ttop_view.body_top + i - ttop_view.scroll, 46, "%2.2f\t", stats[i].mem_usage);
         mvprintw(ttop_view.body_top + i - ttop_view.scroll, 55, "%3d:%02d:%02d\t", hour, minute, second);
         mvprintw(ttop_view.body_top + i - ttop_view.scroll, 65, "%s\t", stats[i].command);
     }
