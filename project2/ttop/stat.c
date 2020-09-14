@@ -1,7 +1,7 @@
 #include "stat.h"
 
 static double get_seconds(unsigned long long starttime);
-static bool is_number(char input[]);
+static bool is_number(char *input);
 static void stat_update_cpu_usage(stat_t *this);
 
 /**
@@ -96,8 +96,11 @@ void stats_update(stat_t stats[], int *stats_length) {
      *stats_length = len;
 }
 
-/* 디렉토리 이름이 숫자인지 확인 (PID 식별) */
-static bool is_number(char input[]) {
+/**
+ * 디렉토리 이름이 숫자인지 확인 (PID 식별)
+ * 숫자면 true, 숫자가 아닌게 섞여있으면 false
+ */
+static bool is_number(char *input) {
      size_t input_len = strlen(input);
 
      for (int i = 0; i < input_len; i++) {
