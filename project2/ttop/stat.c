@@ -1,8 +1,12 @@
 #include "stat.h"
+#include "statm.h"
 
-static double get_seconds(unsigned long long starttime);
-static bool is_number(char *input);
-static void stat_update_cpu_usage(stat_t *this);
+#include <sys/sysinfo.h>
+
+static double __get_seconds(unsigned long long starttime);
+static bool __is_number(char *input);
+static void __stat_update_cpu_usage(stat_t *this);
+static void __stat_update_mem_usage(stat_t *this);
 
 /**
  * CPU 사용 퍼센트 기준 내림차순 정렬
@@ -25,12 +29,12 @@ int stat_cmp(const void *stat1, const void *stat2) {
 }
 
 /* /proc/<pid>/stat 파일을 읽어서 데이터 갱신 */
-void stat_update(stat_t *this, char *pid) {
-    char *pth = malloc(32);
+void stat_update(stat_t *this, int pid) {
+    char *path = malloc(32);
 
-    sprintf(pth, "/proc/%s/stat", pid);
+    sprintf(path, "/proc/%d/stat", pid);
 
-    FILE *file = fopen(pth, "r");
+    FILE *file = fopen(path, "r");
 
     if (!file)
         return;
@@ -63,10 +67,11 @@ void stat_update(stat_t *this, char *pid) {
 
     fclose(file);
 
-    stat_update_cpu_usage(this);
-    this->time = get_seconds(this->starttime);
+    __stat_update_cpu_usage(this);
+    __stat_update_mem_usage(this);
+    this->time = __get_seconds(this->starttime);
 
-    free(pth);
+    free(path);
 }
 
 /**
@@ -86,10 +91,10 @@ void stats_update(stat_t stats[], int *stats_length) {
     while ((dir = readdir(directory)) != NULL && len < 256) {
         pid_buffer = dir->d_name;
 
-        if (is_number(pid_buffer) == false)
+        if (__is_number(pid_buffer) == false)
             continue;
 
-        stat_update(&stats[len], pid_buffer);
+        stat_update(&stats[len], atoi(pid_buffer));
         len ++;
     }
 
@@ -100,7 +105,7 @@ void stats_update(stat_t stats[], int *stats_length) {
  * 디렉토리 이름이 숫자인지 확인 (PID 식별)
  * 숫자면 true, 숫자가 아닌게 섞여있으면 false
  */
-static bool is_number(char *input) {
+static bool __is_number(char *input) {
     size_t input_len = strlen(input);
 
     for (int i = 0; i < input_len; i++) {
@@ -112,7 +117,7 @@ static bool is_number(char *input) {
 }
 
 /* 프로세스 실행 시간 계산 */
-static double get_seconds(unsigned long long starttime) {
+static double __get_seconds(unsigned long long starttime) {
     long int uptime;
     long int clock_ticks;
     double seconds;
@@ -137,9 +142,9 @@ static double get_seconds(unsigned long long starttime) {
 }
 
 /* CPU 사용 퍼센트 계산후 업데이트 */
-static void stat_update_cpu_usage(stat_t *this) {
+static void __stat_update_cpu_usage(stat_t *this) {
     long int total_time, clock_ticks;
-    double process_seconds = get_seconds(this->starttime);
+    double process_seconds = __get_seconds(this->starttime);
 
     clock_ticks = sysconf(_SC_CLK_TCK);
     total_time = this->utime + this->stime + this->cutime;
@@ -150,4 +155,19 @@ static void stat_update_cpu_usage(stat_t *this) {
     }
 
     this->cpu_usage = 100.0 * ((total_time / clock_ticks) / process_seconds);
+}
+
+static void __stat_update_mem_usage(stat_t *this) {
+    long int total_mem; // TODO:
+    statm_t statm;
+    statm_update(&statm, this->pid);
+
+    struct sysinfo info;
+    sysinfo(&info);
+    // system_totalram     = (uint64_t)(info.totalram * info.mem_unit);
+    // system_availableram = (uint64_t)((info.freeram + info.bufferram) * info.mem_unit);
+    // system_freeram      = (uint64_t)(info.freeram * info.mem_unit);
+    total_mem = (info.totalram * info.mem_unit);
+
+    this->mem_usage = (statm.resident + statm.data) * 100 / total_mem;
 }

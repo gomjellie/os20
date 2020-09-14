@@ -1,5 +1,7 @@
-#include "stat.h"
+#include <ncurses.h>
 #include <stdlib.h>
+
+#include "stat.h"
 
 typedef struct view {
     int height;
@@ -65,8 +67,9 @@ void on_draw(const stat_t stats[], const int stats_len, const view_t ttop_view) 
     mvprintw(0, 10, "  NI\t");
     mvprintw(0, 15, " S\t");
     mvprintw(0, 20, "  %%CPU\t");
-    mvprintw(0, 30, "   TIME+\t");
-    mvprintw(0, 40, "COMMAND");
+    mvprintw(0, 30, "  %%MEM\t");
+    mvprintw(0, 40, "   TIME+\t");
+    mvprintw(0, 50, "COMMAND");
 
     for (int i = ttop_view.scroll; i < stats_len && i + 1 - ttop_view.scroll < ttop_view.height; i++) {
         int hour = stats[i].time / 3600;
@@ -78,8 +81,9 @@ void on_draw(const stat_t stats[], const int stats_len, const view_t ttop_view) 
         mvprintw(i + 1 - ttop_view.scroll, 10, "%3ld\t", stats[i].nice);
         mvprintw(i + 1 - ttop_view.scroll, 15, "%2c\t", stats[i].state);
         mvprintw(i + 1 - ttop_view.scroll, 20, "%6.2f\t", stats[i].cpu_usage);
-        mvprintw(i + 1 - ttop_view.scroll, 30, "%02d:%02d:%02d\t", hour, minute, second);
-        mvprintw(i + 1 - ttop_view.scroll, 40, "%s\t", stats[i].command);
+        mvprintw(i + 1 - ttop_view.scroll, 30, "%6.2f\t", stats[i].mem_usage);
+        mvprintw(i + 1 - ttop_view.scroll, 40, "%02d:%02d:%02d\t", hour, minute, second);
+        mvprintw(i + 1 - ttop_view.scroll, 50, "%s\t", stats[i].command);
     }
 }
 
