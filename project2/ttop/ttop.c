@@ -81,18 +81,17 @@ double get_seconds(unsigned long long starttime) {
 
      FILE *uptimeFile = fopen("/proc/uptime", "r");
 
-     if (!uptimeFile) {
+     if (!uptimeFile)
           return 0;
-     }
+
 
      fscanf(uptimeFile, "%ld", &uptime);
      fclose(uptimeFile);
 
      hertz = sysconf(_SC_CLK_TCK);
 
-     if (hertz == 0) {
+     if (hertz == 0)
           return 0;
-     }
 
      seconds = (double)(uptime - starttime / hertz);
 
@@ -110,15 +109,14 @@ double get_cpu_usage(unsigned long int utime, unsigned long int stime, long int 
      total_time = utime + stime;
      total_time = total_time + cstime + cutime;
 
-     if (hertz == 0) {
+     if (hertz == 0)
           return 0;
-     }
 
      seconds = get_seconds(starttime);
 
-     if (seconds == 0) {
+     if (seconds == 0)
           return 0;
-     }
+
 
      cpu_usage = 100 * ((total_time / hertz) / seconds);
 
@@ -131,10 +129,8 @@ double get_cpu_usage(unsigned long int utime, unsigned long int stime, long int 
 void read_stat(char *path, int position, stat_t stats[]) {
      char *pth = malloc(sizeof(char) * 90);
 
-     int null_int;
-     unsigned int null_uns_int;
-     unsigned long int utime, stime, null_uns_long_int;
-     long int cutime, cstime, null_long_int;
+     unsigned long int utime, stime;
+     long int cutime, cstime;
      unsigned long long starttime;
 
      strcpy(pth, path);
@@ -202,16 +198,15 @@ void read_all_proc(int row, int col) {
      while ((dir = readdir(directory)) != NULL && i < 300) {
           directory_name_buffer = dir->d_name;
 
-          if (is_number(directory_name_buffer) == false) {
+          if (is_number(directory_name_buffer) == false)
                continue;
-          }
 
           strcpy(current_path, "/proc/");
           strcat(current_path, directory_name_buffer);
           strcat(current_path, "/");
 
           read_stat(current_path, i, stats);
-          i = i + 1;
+          i ++;
      }
 
      sort_proc(stats, i - 1);
