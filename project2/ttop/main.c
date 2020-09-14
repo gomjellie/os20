@@ -1,17 +1,14 @@
 #include "ttop.h"
 
 int main(int argc, char const * argv[]) {
-
-	int row, col;
-
 	initscr();
-	getmaxyx(stdscr, row, col);
 
 	while(true) {
-
-		read_all_proc(row, col);
+		stat_t *stats = malloc(sizeof(stat_t) * 300);
+		stat_parse(&stats);
 		refresh();
-		sleep(1);
+		sleep(3);
+		free(stats);
 	}
 	
 	getch();

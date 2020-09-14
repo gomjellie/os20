@@ -37,9 +37,9 @@ void sort_proc(stat_t stats[], int n) {
 }
 
 /**
- * 진입 함수
+ * 드로잉 함수
  */
-void print_all_proc(stat_t stats[], int n) {
+void on_draw(stat_t stats[], int stats_len) {
      int hour, minute, second;
 
      for (int i = 1; i < 70; i++) {
@@ -57,7 +57,7 @@ void print_all_proc(stat_t stats[], int n) {
           mvprintw(2, i, "=");
      }
 
-     for (int i = 0; i < n; i++) {
+     for (int i = 0; i < stats_len; i++) {
           hour = stats[i].time / 3600;
           minute = (stats[i].time - (3600 * hour)) / 60;
           second = (stats[i].time - (3600 * hour) - (minute * 60));
@@ -170,11 +170,10 @@ void read_stat(char *path, int position, stat_t stats[]) {
  * 이름의 숫자로 디렉토리를 확인합니다.
  * 찾은 디렉토리를 전달하는 read_print_stat 함수를 호출합니다.
  */
-void read_all_proc(int row, int col) {
+void stat_parse(stat_t *stats[]) {
      int i = 0;
      DIR *directory;
      struct dirent *dir;
-     stat_t stats[300];
      char *directory_name_buffer, *current_path;
 
      directory = opendir("/proc");
@@ -192,12 +191,12 @@ void read_all_proc(int row, int col) {
           strcat(current_path, directory_name_buffer);
           strcat(current_path, "/");
 
-          read_stat(current_path, i, stats);
+          read_stat(current_path, i, *stats);
           i ++;
      }
 
-     sort_proc(stats, i - 1);
-     print_all_proc(stats, 15);
+     sort_proc(*stats, i - 1);
+     on_draw(*stats, 15);
 
      free(current_path);
 }

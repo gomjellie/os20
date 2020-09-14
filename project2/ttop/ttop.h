@@ -76,6 +76,6 @@ void read_stat(char * path, int position, stat_t stats[]);
  * 이름의 숫자로 디렉토리를 확인합니다.
  * 찾은 디렉토리를 전달하는 read_print_stat 함수를 호출합니다.
  */
-void read_all_proc(int row, int col);
+void stat_parse(stat_t *stats[]);
 
 #endif /* __TTOP_H__ */
