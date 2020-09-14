@@ -39,12 +39,11 @@ double stat_calc_cpu_usage(stat_t *this) {
      return 100.0 * ((total_time / clock_ticks) / process_seconds);
 }
 
-/* stat 파일을 읽어서 stats[idx]를 갱신함. */
-void stat_update(stat_t *this, char *path) {
-     char *pth = malloc(sizeof(char) * 90);
+/* /proc/<pid>/stat 파일을 읽어서 데이터 갱신 */
+void stat_update(stat_t *this, char *pid) {
+     char *pth = malloc(32);
 
-     strcpy(pth, path);
-     strcat(pth, "stat");
+     sprintf(pth, "/proc/%s/stat", pid);
 
      FILE *file = fopen(pth, "r");
 
@@ -88,18 +87,16 @@ void stat_update(stat_t *this, char *path) {
 }
 
 /**
- * /proc 디렉토리에서 검색
- * 이름의 숫자로 디렉토리를 확인합니다.
+ * /proc 디렉토리에서 숫자이름(pid)들을 찾아서 그 프로세스들의 stat을 업데이트
  * stat_length 로 읽어온 pid개수를 저장해서 호출자에게 넘겨줌.
  */
-void stat_parse(stat_t stats[], int *stat_length) {
+void stats_update(stat_t stats[], int *stats_length) {
      int i = 0;
      DIR *directory;
      struct dirent *dir;
-     char *directory_name_buffer, *current_path;
+     char *directory_name_buffer;
 
      directory = opendir("/proc");
-     current_path = malloc(sizeof(char) * 10);
 
      if (directory == NULL) return;
 
@@ -109,16 +106,11 @@ void stat_parse(stat_t stats[], int *stat_length) {
           if (is_number(directory_name_buffer) == false)
                continue;
 
-          strcpy(current_path, "/proc/");
-          strcat(current_path, directory_name_buffer);
-          strcat(current_path, "/");
-
-          stat_update(&stats[i], current_path);
+          stat_update(&stats[i], directory_name_buffer);
           i ++;
      }
 
-     *stat_length = i;
-     free(current_path);
+     *stats_length = i;
 }
 
 /* 디렉토리 이름이 숫자인지 확인 (PID 식별) */

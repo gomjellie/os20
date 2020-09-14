@@ -13,7 +13,7 @@ int main(int argc, char const * argv[]) {
 
     while (true) {
         int stat_length;
-        stat_parse(stats, &stat_length);
+        stats_update(stats, &stat_length);
 
         qsort(stats, stat_length, sizeof(stat_t), stat_cmp);
         on_draw(stats, stat_length);
