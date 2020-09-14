@@ -46,14 +46,14 @@ void print_all_proc(stat_t stats[], int n) {
           mvprintw(0, i, "=");
      }
 
-     mvprintw(1, 1, "     PID |");
-     mvprintw(1, 11, "  PR |");
-     mvprintw(1, 17, "   S |");
-     mvprintw(1, 27, "    %%CPU |");
-     mvprintw(1, 42, "    TIME |");
-     mvprintw(1, 53, "COMMAND");
+     mvprintw(1,  0, "     PID |");
+     mvprintw(1, 10, "  PR |");
+     mvprintw(1, 16, "   S |");
+     mvprintw(1, 26, "    %%CPU |");
+     mvprintw(1, 41, "    TIME |");
+     mvprintw(1, 52, "COMMAND");
 
-     for (int i = 1; i < 70; i++) {
+     for (int i = 0; i < 70; i++) {
           mvprintw(2, i, "=");
      }
 
@@ -62,12 +62,12 @@ void print_all_proc(stat_t stats[], int n) {
           minute = (stats[i].time - (3600 * hour)) / 60;
           second = (stats[i].time - (3600 * hour) - (minute * 60));
 
-          mvprintw(i + 3, 1, "%8d |\t", stats[i].pid);
-          mvprintw(i + 3, 11, "%4ld |\t", stats[i].priority);
-          mvprintw(i + 3, 17, "%4c |\t", stats[i].state);
-          mvprintw(i + 3, 27, "%6.2f %% |\t", stats[i].cpu_usage);
-          mvprintw(i + 3, 42, "%02d:%02d:%02d |\t", hour, minute, second);
-          mvprintw(i + 3, 53, "%s\t\n", stats[i].command);
+          mvprintw(i + 3,  0, "%8d |\t", stats[i].pid);
+          mvprintw(i + 3, 10, "%4ld |\t", stats[i].priority);
+          mvprintw(i + 3, 16, "%4c |\t", stats[i].state);
+          mvprintw(i + 3, 26, "%6.2f %% |\t", stats[i].cpu_usage);
+          mvprintw(i + 3, 41, "%02d:%02d:%02d |\t", hour, minute, second);
+          mvprintw(i + 3, 52, "%s\t", stats[i].command);
      }
 }
 
@@ -111,7 +111,7 @@ double stat_calc_cpu_usage(stat_t *this) {
      if (clock_ticks == 0)
           return 0.0; // 0으로 나눌 수 없음
 
-     return 100 * ((total_time / clock_ticks) / process_seconds);
+     return 100.0 * ((total_time / clock_ticks) / process_seconds);
 }
 
 /**
