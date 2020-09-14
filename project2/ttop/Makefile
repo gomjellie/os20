@@ -1,7 +1,7 @@
-GNU = gcc
+CC = gcc
 
 all:
-	$(GNU) main.c ttop.c -o ttop -Wall -pedantic -lncurses
+	$(CC) ttop.c stat.c -o ttop -Wall -pedantic -lncurses
 
 run:
 	./ttop
@@ -12,4 +12,4 @@ clean:
 	rm ttop;
 	
 debug:
-	$(GNU) -g main.c ttop.c -o ttop -Wall -pedantic -lncurses
+	$(CC) -g ttop.c stat.c -o ttop -Wall -pedantic -lncurses

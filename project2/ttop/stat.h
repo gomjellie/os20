@@ -49,14 +49,14 @@ struct stat {
 /* CPU 사용 퍼센트 계산 */
 double stat_calc_cpu_usage(stat_t *this);
 
+/* stat 파일을 읽어서 stats[idx]를 갱신함. */
+void stat_update(stat_t *this, char *path);
+
 /**
  * CPU 사용 퍼센트 기준 내림차순 정렬
  * 퍼센트가 같을경우 pid기준 오름차순 정렬
  */
 int stat_cmp(const void *p1, const void *p2);
-
-/* stat 파일을 읽어서 stats[idx]를 갱신함. */
-void stat_update(char * path, int idx, stat_t stats[]);
 
 /**
  * /proc 디렉토리에서 검색
