@@ -7,7 +7,8 @@ bool is_number(char input[]) {
      size_t input_len = strlen(input);
 
      for (int i = 0; i < input_len; i++) {
-          if (isdigit(input[i]) != 0) return false; // isdigit 은 0~9가 있으면 0을 리턴함
+          if (isdigit(input[i]) == 0) // 숫자가 아니면 0 리턴함
+               return false;
      }
 
      return true;
@@ -145,30 +146,34 @@ void read_stat(char *path, int position, stat_t stats[]) {
           return;
      }
 
-     fscanf(file, "%d %s %c %d %d %d %d %d %u %lu %lu %lu %lu %lu %lu %ld %ld %ld %ld %ld %ld %llu",
-          &stats[position].pid,
-          stats[position].command,
-          &stats[position].state,
-          &null_int,
-          &null_int,
-          &null_int,
-          &null_int,
-          &null_uns_int,
-          &null_int,
-          &null_uns_long_int,
-          &null_uns_long_int,
-          &null_uns_long_int,
-          &null_uns_long_int,
-          &utime,
-          &stime,
-          &cutime,
-          &cstime,
-          &stats[position].priority,
-          &null_long_int,
-          &null_long_int,
-          &null_long_int,
-          &starttime);
-
+     // 0   1    2 3 4 5 6 7 8 9 0 1 2 3  4 5 6  7 8 9 0 1      22       23                   24 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+     // 1 (init) S 0 1 1 0 0 0 0 0 0 0 0 12 0 0 20 0 2 0 0 950688743424 103 18446744073709551615 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+     fscanf(file, "%d %s %c %d %d %d %d %d %u %lu %lu %lu %lu %lu %lu %ld %ld %ld %ld %ld %ld %llu %lu %ld",
+          &stats[position].pid,         //  0st , pid          %d  ,
+          stats[position].command,      //  1st , comm         %s  , (zsh)
+          &stats[position].state,       //  2nd , state        %c  , one of (S, R, Z, T, ...) 
+          &stats[position].ppid,        //  3rd , ppid         %d  ,
+          &stats[position].pgrp,        //  4th , pgrp         %d  , process group ID of the process.
+          &stats[position].session,     //  5th , session      %d  ,
+          &stats[position].tty_nr,      //  6th , tty_nr       %d  ,
+          &stats[position].tpgid,       //  7th , tpgid        %d  ,
+          &stats[position].flags,       //  8th , flags        %u  ,
+          &stats[position].mintflt,     //  9th , mintflt      %lu ,
+          &stats[position].cminflt,     // 10th , cminflt      %lu ,
+          &stats[position].majflt,      // 11th , majflt       %lu ,
+          &stats[position].cmajflt,     // 12th , cmajflt      %lu ,
+          &utime,                       // 13th , utime        %lu , 
+          &stime,                       // 14th , stime        %lu , 
+          &cutime,                      // 15th , cutime       %ld ,
+          &cstime,                      // 16th , cstime       %ld , utime + stime + cstime => total_time
+          &stats[position].priority,    // 17th , priority     %ld , mostly value of 20
+          &stats[position].nice,        // 18th , nice         %ld , 
+          &stats[position].num_threads, // 19th , num_threads  %ld , 
+          &stats[position].iteralvalue, // 20th , iteralvalue  %ld ,
+          &starttime,                   // 21th , starttime    %llu,
+          &stats[position].vsize,       // 22th , vsize        %lu ,
+          &stats[position].rss);        // 23th , rss          %ld ,
+     
      fclose(file);
 
      stats[position].cpu_usage = get_cpu_usage(utime, stime, cutime, cstime, starttime);
@@ -197,7 +202,7 @@ void read_all_proc(int row, int col) {
      while ((dir = readdir(directory)) != NULL && i < 300) {
           directory_name_buffer = dir->d_name;
 
-          if (is_number(directory_name_buffer) == true) { // ??!
+          if (is_number(directory_name_buffer) == false) {
                continue;
           }
 
