@@ -1,17 +1,17 @@
 #include "stat.h"
 #include <stdlib.h>
 
-typedef struct screen {
+typedef struct view {
     int height;
     int width;
     int scroll; // y 축 스크롤정도를 나타냄, 위 아래키를 통해서 조정 가능
-} screen_t;
+} view_t;
 
-void screen_init(screen_t *this) {
+void screen_init(view_t *this) {
     this->height = this->width = this->scroll = 0;
 }
 
-void on_draw(const stat_t stats[], const int stats_len, const screen_t ttop_screen);
+void on_draw(const stat_t stats[], const int stats_len, const view_t ttop_screen);
 
 int main(int argc, char const * argv[]) {
     initscr();
@@ -20,7 +20,7 @@ int main(int argc, char const * argv[]) {
     timeout(3000);
 
     stat_t *stats = malloc(sizeof(stat_t) * 256);
-    screen_t ttop_screen;
+    view_t ttop_screen;
     screen_init(&ttop_screen);
 
     while (true) {
@@ -45,7 +45,7 @@ int main(int argc, char const * argv[]) {
 /**
  * 드로잉 함수
  */
-void on_draw(const stat_t stats[], const int stats_len, const screen_t ttop_screen) {
+void on_draw(const stat_t stats[], const int stats_len, const view_t ttop_screen) {
 //   PID USER      PR  NI    VIRT    RES    SHR S  %CPU  %MEM     TIME+ COMMAND     
     mvprintw(0,  0, "   PID\t");
     mvprintw(0,  5, "  PR\t");
