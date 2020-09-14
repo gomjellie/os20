@@ -71,6 +71,7 @@ void stat_update(stat_t *this, int pid) {
         &this->vsize,      // 22th , vsize       %lu ,
         &this->rss);       // 23th , rss        %ld ,
 
+    sscanf(this->command, "(%[^)])", this->command);
     fclose(file);
 
     __stat_update_cpu_usage(this);
