@@ -76,7 +76,7 @@ void print_all_proc(stat_t stats[], int n) {
  */
 double get_seconds(unsigned long long starttime) {
      long int uptime;
-     long int hertz;
+     long int clock_ticks;
      double seconds;
 
      FILE *uptimeFile = fopen("/proc/uptime", "r");
@@ -88,12 +88,12 @@ double get_seconds(unsigned long long starttime) {
      fscanf(uptimeFile, "%ld", &uptime);
      fclose(uptimeFile);
 
-     hertz = sysconf(_SC_CLK_TCK);
+     clock_ticks = sysconf(_SC_CLK_TCK);
 
-     if (hertz == 0)
+     if (clock_ticks == 0)
           return 0;
 
-     seconds = (double)(uptime - starttime / hertz);
+     seconds = (double)(uptime - (starttime / clock_ticks));
 
      return seconds;
 }
@@ -101,26 +101,17 @@ double get_seconds(unsigned long long starttime) {
 /*
  * CPU 사용 퍼센트 계산
  */
-double get_cpu_usage(unsigned long int utime, unsigned long int stime, long int cutime, long int cstime, unsigned long long starttime) {
-     double cpu_usage, seconds;
-     long int total_time, hertz;
+double stat_calc_cpu_usage(stat_t *this) {
+     long int total_time, clock_ticks;
+     double process_seconds = get_seconds(this->starttime);
 
-     hertz = sysconf(_SC_CLK_TCK);
-     total_time = utime + stime;
-     total_time = total_time + cstime + cutime;
+     clock_ticks = sysconf(_SC_CLK_TCK);
+     total_time = this->utime + this->stime + this->cutime;
 
-     if (hertz == 0)
-          return 0;
+     if (clock_ticks == 0)
+          return 0.0; // 0으로 나눌 수 없음
 
-     seconds = get_seconds(starttime);
-
-     if (seconds == 0)
-          return 0;
-
-
-     cpu_usage = 100 * ((total_time / hertz) / seconds);
-
-     return cpu_usage;
+     return 100 * ((total_time / clock_ticks) / process_seconds);
 }
 
 /**
@@ -128,10 +119,6 @@ double get_cpu_usage(unsigned long int utime, unsigned long int stime, long int 
  */
 void read_stat(char *path, int position, stat_t stats[]) {
      char *pth = malloc(sizeof(char) * 90);
-
-     unsigned long int utime, stime;
-     long int cutime, cstime;
-     unsigned long long starttime;
 
      strcpy(pth, path);
      strcat(pth, "stat");
@@ -158,22 +145,22 @@ void read_stat(char *path, int position, stat_t stats[]) {
           &stats[position].cminflt,     // 10th , cminflt      %lu ,
           &stats[position].majflt,      // 11th , majflt       %lu ,
           &stats[position].cmajflt,     // 12th , cmajflt      %lu ,
-          &utime,                       // 13th , utime        %lu , 
-          &stime,                       // 14th , stime        %lu , 
-          &cutime,                      // 15th , cutime       %ld ,
-          &cstime,                      // 16th , cstime       %ld , utime + stime + cstime => total_time
+          &stats[position].utime,       // 13th , utime        %lu , 
+          &stats[position].stime,       // 14th , stime        %lu , 
+          &stats[position].cutime,      // 15th , cutime       %ld ,
+          &stats[position].cstime,      // 16th , cstime       %ld , utime + stime + cstime => total_time
           &stats[position].priority,    // 17th , priority     %ld , mostly value of 20
           &stats[position].nice,        // 18th , nice         %ld , 
           &stats[position].num_threads, // 19th , num_threads  %ld , 
           &stats[position].iteralvalue, // 20th , iteralvalue  %ld ,
-          &starttime,                   // 21th , starttime    %llu,
+          &stats[position].starttime,   // 21th , starttime    %llu,
           &stats[position].vsize,       // 22th , vsize        %lu ,
           &stats[position].rss);        // 23th , rss          %ld ,
-     
+
      fclose(file);
 
-     stats[position].cpu_usage = get_cpu_usage(utime, stime, cutime, cstime, starttime);
-     stats[position].time = get_seconds(starttime);
+     stats[position].cpu_usage = stat_calc_cpu_usage(&stats[position]);
+     stats[position].time = get_seconds(stats[position].starttime);
 
      free(pth);
 }

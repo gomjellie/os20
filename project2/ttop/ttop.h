@@ -47,6 +47,11 @@ struct stat {
 } typedef stat_t;
 
 /**
+ * CPU 사용 퍼센트 계산
+ */
+double stat_calc_cpu_usage(stat_t *this);
+
+/**
  * 프로세스 실행 시간 계산
  */
 double get_seconds(unsigned long long starttime);
@@ -55,11 +60,6 @@ double get_seconds(unsigned long long starttime);
  * CPU 사용 퍼센트 기준 정렬
  */
 void sort_proc(stat_t stats[], int n);
-
-/**
- * CPU 사용 퍼센트 계산
- */
-double get_cpu_usage(unsigned long int utime, unsigned long int stime, long int cutime, long int cstime, unsigned long long starttime);
 
 /**
  * 디렉토리 이름이 숫자인지 확인 (PID 식별)
