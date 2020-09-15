@@ -66,7 +66,7 @@ QUIT:
  */
 void on_draw(const stat_t stats[], const int stats_len, const view_t ttop_view) {
 //   PID USER      PR  NI    VIRT    RES    SHR S  %CPU  %MEM     TIME+ COMMAND     
-    mvprintw(0,  0, "top - 04:56:35 up  8:03,  0 users,  load average: 0.52, 0.58, 0.59");
+    mvprintw(0,  0, "ttop - 04:56:35 up  8:03,  0 users,  load average: 0.52, 0.58, 0.59");
     mvprintw(1,  0, "Tasks:  %d total,   1 running,  11 sleeping,   0 stopped,   0 zombie", stats_len);
     mvprintw(2,  0, "%%Cpu(s): 12.3 us,  5.2 sy,  0.0 ni, 82.1 id,  0.0 wa,  0.5 hi,  0.0 si,  0.0 st");
     mvprintw(3,  0, "MiB Mem :  30822.0 total,  19477.0 free,  11121.0 used,    224.0 buff/cache");
