@@ -73,17 +73,18 @@ void on_draw(const stat_t stats[], const int stats_len, const view_t ttop_view) 
     mvprintw(4,  0, "MiB Swap:  29639.6 total,  29639.6 free,      0.0 used.  19562.7 avail Mem");
     
     attron(COLOR_PAIR(ttop_view.label_color_schema));
-    mvprintw(ttop_view.body_top - 1,  0, "   PID");
-    mvprintw(ttop_view.body_top - 1,  6, "  PR");
-    mvprintw(ttop_view.body_top - 1, 10, "  NI\t\t");
-    mvprintw(ttop_view.body_top - 1, 19, "VIRT");
-    mvprintw(ttop_view.body_top - 1, 23, "   RES");
-    mvprintw(ttop_view.body_top - 1, 29, "    SHR\t\t");
-    mvprintw(ttop_view.body_top - 1, 37, "S\t");
-    mvprintw(ttop_view.body_top - 1, 40, "%%CPU\t");
-    mvprintw(ttop_view.body_top - 1, 46, "%%MEM\t");
-    mvprintw(ttop_view.body_top - 1, 55, "     TIME\t\t");
-    mvprintw(ttop_view.body_top - 1, 65, "COMMAND\t");
+    int coord_y = ttop_view.body_top - 1;
+    mvprintw(coord_y,  0, "   PID");
+    mvprintw(coord_y,  6, "  PR");
+    mvprintw(coord_y, 10, "  NI\t\t");
+    mvprintw(coord_y, 19, "VIRT");
+    mvprintw(coord_y, 23, "   RES");
+    mvprintw(coord_y, 29, "    SHR\t\t");
+    mvprintw(coord_y, 37, "S\t");
+    mvprintw(coord_y, 40, "%%CPU\t");
+    mvprintw(coord_y, 46, "%%MEM\t");
+    mvprintw(coord_y, 55, "     TIME\t\t");
+    mvprintw(coord_y, 65, "COMMAND\t");
     attroff(COLOR_PAIR(ttop_view.label_color_schema));
     use_default_colors();
     
@@ -92,17 +93,18 @@ void on_draw(const stat_t stats[], const int stats_len, const view_t ttop_view) 
         int minute = (stats[i].time - (3600 * hour)) / 60;
         int second = (stats[i].time - (3600 * hour) - (minute * 60));
 
-        mvprintw(ttop_view.body_top + i - ttop_view.scroll,  0, "%6d\t", stats[i].pid);
-        mvprintw(ttop_view.body_top + i - ttop_view.scroll,  6, "%4ld\t", stats[i].priority);
-        mvprintw(ttop_view.body_top + i - ttop_view.scroll, 10, "%4ld\t", stats[i].nice);
-        mvprintw(ttop_view.body_top + i - ttop_view.scroll, 19, "%5lu\t", (unsigned long)(stats[i].vsize / 1024UL));
-        mvprintw(ttop_view.body_top + i - ttop_view.scroll, 23, "%7ld\t", stats[i].rss);
-        mvprintw(ttop_view.body_top + i - ttop_view.scroll, 29, "%7d\t", stats[i].shared);
-        mvprintw(ttop_view.body_top + i - ttop_view.scroll, 37, "%1c\t", stats[i].state);
-        mvprintw(ttop_view.body_top + i - ttop_view.scroll, 40, "%2.2f\t", stats[i].cpu_usage);
-        mvprintw(ttop_view.body_top + i - ttop_view.scroll, 46, "%2.2f\t", stats[i].mem_usage);
-        mvprintw(ttop_view.body_top + i - ttop_view.scroll, 55, "%3d:%02d:%02d\t", hour, minute, second);
-        mvprintw(ttop_view.body_top + i - ttop_view.scroll, 65, "%s\t", stats[i].command);
+        coord_y = ttop_view.body_top + i - ttop_view.scroll;
+        mvprintw(coord_y,  0, "%6d\t", stats[i].pid);
+        mvprintw(coord_y,  6, "%4ld\t", stats[i].priority);
+        mvprintw(coord_y, 10, "%4ld\t", stats[i].nice);
+        mvprintw(coord_y, 19, "%5lu\t", (unsigned long)(stats[i].vsize / 1024UL));
+        mvprintw(coord_y, 23, "%7ld\t", stats[i].rss);
+        mvprintw(coord_y, 29, "%7d\t", stats[i].shared);
+        mvprintw(coord_y, 37, "%1c\t", stats[i].state);
+        mvprintw(coord_y, 40, "%2.2f\t", stats[i].cpu_usage);
+        mvprintw(coord_y, 46, "%2.2f\t", stats[i].mem_usage);
+        mvprintw(coord_y, 55, "%3d:%02d:%02d\t", hour, minute, second);
+        mvprintw(coord_y, 65, "%s\t", stats[i].command);
     }
 }
 
