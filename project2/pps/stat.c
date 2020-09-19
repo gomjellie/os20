@@ -2,6 +2,9 @@
 #include "statm.h"
 
 #include <sys/sysinfo.h>
+#include <stdio.h>
+#include <unistd.h>
+#include <fcntl.h>
 
 static double __get_seconds(unsigned long long starttime);
 static bool __is_number(char *input);
@@ -17,26 +20,22 @@ int stat_cmp(const void *stat1, const void *stat2) {
     const stat_t *s1 = stat1;
     const stat_t *s2 = stat2;
     
-    if (s1->cpu_usage < s2->cpu_usage)
-        return 1;
-    if (s1->cpu_usage == s2->cpu_usage) {
-        if (s1->mem_usage < s2->mem_usage)
-            return 1;
-        if (s1->mem_usage == s2->mem_usage) {
-            if (s1->pid > s2->pid)
-                return 1;
-            if (s1->pid == s2->pid)
-                return 0;
-            return -1;
-        }
-        return -1;
-    }
-    return -1;
+    return strcmp(s1->tty, s2->tty);
 }
 
 /* /proc/<pid>/stat 파일을 읽어서 데이터 갱신 */
 void stat_update(stat_t *this, int pid) {
     char *path = malloc(32);
+
+    sprintf(path, "/proc/%d/fd/0", pid);
+    int fd = open(path, O_RDONLY);
+    char *tty = ttyname(fd);
+    if (tty != NULL)
+        sprintf(this->tty, "%s", ttyname(fd));
+    else
+        this->tty[0] = '\0';
+
+    close(fd);
 
     sprintf(path, "/proc/%d/stat", pid);
 

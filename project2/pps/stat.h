@@ -7,12 +7,12 @@
 #include <stdbool.h>
 #include <time.h>
 
-#ifndef __TTOP_H__
-#define __TTOP_H__
+#ifndef __STAT_H__
+#define __STAT_H__
 
 #define BUFFER_LENGTH 32
 
-typedef struct stat {
+typedef struct _stat {
      // /proc/PID/stat 에 있는 정보를 순서대로 나열함.
      int pid;
      char command[BUFFER_LENGTH];
@@ -45,6 +45,7 @@ typedef struct stat {
      double mem_usage;
      double time;
      size_t shared;
+     char tty[32];
 } stat_t;
 
 void stat_update(stat_t *this, int pid);
@@ -53,4 +54,4 @@ int stat_cmp(const void *stat1, const void *stat2);
 
 void stats_update(stat_t stats[], int *stats_length);
 
-#endif /* __TTOP_H__ */
+#endif /* __STAT_H__ */

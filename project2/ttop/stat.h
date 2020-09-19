@@ -7,8 +7,8 @@
 #include <stdbool.h>
 #include <time.h>
 
-#ifndef __TTOP_H__
-#define __TTOP_H__
+#ifndef __STAT_H__
+#define __STAT_H__
 
 #define BUFFER_LENGTH 32
 
@@ -53,4 +53,4 @@ int stat_cmp(const void *stat1, const void *stat2);
 
 void stats_update(stat_t stats[], int *stats_length);
 
-#endif /* __TTOP_H__ */
+#endif /* __STAT_H__ */
