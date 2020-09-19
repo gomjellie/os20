@@ -1,11 +1,14 @@
 #include <ncurses.h>
 #include <stdlib.h>
 #include <time.h>
+#include <sys/sysinfo.h>
 
 #include "stat.h"
 
 typedef struct banner {
     char time[16];
+    char load_avg[16];
+    char users[8];
     state_count_t state_count;
 } banner_t;
 
@@ -67,6 +70,8 @@ int main(int argc, char const * argv[]) {
 QUIT:
     endwin();
     free(stats);
+    free(ttop_view);
+    free(banner);
 
     return 0;
 }
@@ -78,7 +83,7 @@ void on_draw(const view_t *ttop_view, const stat_t stats[], const int stats_len,
 //   PID USER      PR  NI    VIRT    RES    SHR S  %CPU  %MEM     TIME+ COMMAND
     const banner_t bnr = *banner; // banner
     const view_t view = *ttop_view;
-    mvprintw(0,  0, "ttop - %s up ,  0 users,  load average: 0.52, 0.58, 0.59", bnr.time);
+    mvprintw(0,  0, "ttop - %s up ,  0 users,  load average: %s", bnr.time, bnr.load_avg);
     mvprintw(1,  0, "Tasks:  %d total,   %d running,  %d sleeping,   %d stopped,   %d zombie",
                     stats_len, bnr.state_count.running, bnr.state_count.sleeping, bnr.state_count.stopped, bnr.state_count.zombie);
     mvprintw(2,  0, "%%Cpu(s): 12.3 us,  5.2 sy,  0.0 ni, 82.1 id,  0.0 wa,  0.5 hi,  0.0 si,  0.0 st");
@@ -155,11 +160,16 @@ banner_t *banner_new() {
 }
 
 void banner_update(banner_t *this, const stat_t stats[], const int stats_len) {
-    time_t rawtime;
-    struct tm *timeinfo;
-    time(&rawtime);
-    timeinfo = localtime(&rawtime);
-    sprintf(this->time, "%d:%d:%d", timeinfo->tm_hour, timeinfo->tm_min, timeinfo->tm_sec);
+    struct sysinfo info;
+    sysinfo(&info);
 
+    int days = info.uptime / 86400;
+    int hours = (info.uptime / 3600) - (days * 24);
+    int mins = (info.uptime / 60) - (days * 1440) - (hours * 60);
+    int seconds = info.uptime % 60;
+
+    sprintf(this->time, "%d:%d:%d %d", hours, mins, seconds, days);
+
+    sprintf(this->load_avg, "%.2f %.2f %.2f", info.loads[0] / 10000.0, info.loads[1] / 10000.0, info.loads[2] / 10000.0);
     stats_count_state(stats, stats_len, &this->state_count);
 }
