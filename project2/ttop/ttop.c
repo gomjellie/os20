@@ -8,7 +8,13 @@
 typedef struct banner {
     char time[16];
     char load_avg[16];
-    char users[8];
+    char ram_total[16];
+    char ram_free[16];
+    char ram_used[16];
+    char swap_total[16];
+    char swap_free[16];
+    char swap_used[16];
+
     state_count_t state_count;
 } banner_t;
 
@@ -83,12 +89,12 @@ void on_draw(const view_t *ttop_view, const stat_t stats[], const int stats_len,
 //   PID USER      PR  NI    VIRT    RES    SHR S  %CPU  %MEM     TIME+ COMMAND
     const banner_t bnr = *banner; // banner
     const view_t view = *ttop_view;
-    mvprintw(0,  0, "ttop - %s up ,  0 users,  load average: %s", bnr.time, bnr.load_avg);
+    mvprintw(0,  0, "ttop - %s days up ,  0 users,  load average: %s", bnr.time, bnr.load_avg);
     mvprintw(1,  0, "Tasks:  %d total,   %d running,  %d sleeping,   %d stopped,   %d zombie",
                     stats_len, bnr.state_count.running, bnr.state_count.sleeping, bnr.state_count.stopped, bnr.state_count.zombie);
     mvprintw(2,  0, "%%Cpu(s): 12.3 us,  5.2 sy,  0.0 ni, 82.1 id,  0.0 wa,  0.5 hi,  0.0 si,  0.0 st");
-    mvprintw(3,  0, "MiB Mem :  30822.0 total,  19477.0 free,  11121.0 used,    224.0 buff/cache");
-    mvprintw(4,  0, "MiB Swap:  29639.6 total,  29639.6 free,      0.0 used.  19562.7 avail Mem");
+    mvprintw(3,  0, "MiB Mem :  %s total,  %s free,  %s used,    224.0 buff/cache", bnr.ram_total, bnr.ram_free, bnr.ram_used);
+    mvprintw(4,  0, "MiB Swap:  %s total,  %s free,  %s used.  19562.7 avail Mem", bnr.swap_total, bnr.swap_free, bnr.swap_used);
     
     attron(COLOR_PAIR(view.label_color_schema));
     int coord_y = view.body_top - 1;
@@ -163,13 +169,26 @@ void banner_update(banner_t *this, const stat_t stats[], const int stats_len) {
     struct sysinfo info;
     sysinfo(&info);
 
+    int secs;
     int days = info.uptime / 86400;
-    int hours = (info.uptime / 3600) - (days * 24);
-    int mins = (info.uptime / 60) - (days * 1440) - (hours * 60);
-    int seconds = info.uptime % 60;
+    secs = info.uptime % 86400;
+    int hours = (secs / 3600);// - (days * 24);
+    secs = secs % 3600;
+    int mins = secs / 60;
+    int seconds = secs % 60;
+    int unit = 1024;
 
-    sprintf(this->time, "%d:%d:%d %d", hours, mins, seconds, days);
+    sprintf(this->time, "%02d:%02d:%02d %d", hours, mins, seconds, days);
 
     sprintf(this->load_avg, "%.2f %.2f %.2f", info.loads[0] / 10000.0, info.loads[1] / 10000.0, info.loads[2] / 10000.0);
+
+    sprintf(this->ram_total, "%ld", info.totalram / unit);
+    sprintf(this->ram_used, "%ld", (info.totalram - info.freeram) / unit);
+    sprintf(this->ram_free, "%ld", info.freeram / unit);
+
+    sprintf(this->swap_total, "%ld", info.totalswap / unit);
+    sprintf(this->swap_used, "%ld", (info.totalswap - info.freeswap) / unit);
+    sprintf(this->swap_free, "%ld", info.freeswap / unit);
+
     stats_count_state(stats, stats_len, &this->state_count);
 }
