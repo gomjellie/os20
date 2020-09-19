@@ -1,7 +1,13 @@
 #include <ncurses.h>
 #include <stdlib.h>
+#include <time.h>
 
 #include "stat.h"
+
+typedef struct banner {
+    char time[16];
+    state_count_t state_count;
+} banner_t;
 
 typedef struct view {
     int height;
@@ -16,9 +22,12 @@ typedef enum direction {
     UP, DOWN
 } direction_t;
 
-void view_init(view_t *this);
+banner_t *banner_new();
+void banner_update(banner_t *this, const stat_t stats[], const int stats_len);
+
+view_t *view_new();
 void view_scroll(view_t *this, direction_t to);
-void on_draw(const stat_t stats[], const int stats_len, const view_t ttop_view);
+void on_draw(const view_t *ttop_view, const stat_t stats[], const int stats_len, const banner_t *banner);
 
 int main(int argc, char const * argv[]) {
     initscr();
@@ -29,27 +38,28 @@ int main(int argc, char const * argv[]) {
     timeout(3000);
 
     stat_t *stats = malloc(sizeof(stat_t) * 256);
-    view_t ttop_view;
-    view_init(&ttop_view);
+    view_t *ttop_view = view_new();
+    banner_t *banner = banner_new();
 
     while (true) {
         int stats_length;
-        getmaxyx(stdscr, ttop_view.height, ttop_view.width);
+        getmaxyx(stdscr, ttop_view->height, ttop_view->width);
         stats_update(stats, &stats_length);
+        banner_update(banner, stats, stats_length);
 
         qsort(stats, stats_length, sizeof(stat_t), stat_cmp);
         clear();
-        on_draw(stats, stats_length, ttop_view);
+        on_draw(ttop_view, stats, stats_length, banner);
         int ch = getch();
         switch (ch) {
             case 'q':
             case 'Q':
             goto QUIT;
             case KEY_UP:
-            view_scroll(&ttop_view, UP);
+            view_scroll(ttop_view, UP);
             break;
             case KEY_DOWN:
-            view_scroll(&ttop_view, DOWN);
+            view_scroll(ttop_view, DOWN);
             break;
         }
     }
@@ -64,16 +74,19 @@ QUIT:
 /**
  * 드로잉 함수
  */
-void on_draw(const stat_t stats[], const int stats_len, const view_t ttop_view) {
-//   PID USER      PR  NI    VIRT    RES    SHR S  %CPU  %MEM     TIME+ COMMAND     
-    mvprintw(0,  0, "ttop - 04:56:35 up  8:03,  0 users,  load average: 0.52, 0.58, 0.59");
-    mvprintw(1,  0, "Tasks:  %d total,   1 running,  11 sleeping,   0 stopped,   0 zombie", stats_len);
+void on_draw(const view_t *ttop_view, const stat_t stats[], const int stats_len, const banner_t *banner) {
+//   PID USER      PR  NI    VIRT    RES    SHR S  %CPU  %MEM     TIME+ COMMAND
+    const banner_t bnr = *banner; // banner
+    const view_t view = *ttop_view;
+    mvprintw(0,  0, "ttop - %s up ,  0 users,  load average: 0.52, 0.58, 0.59", bnr.time);
+    mvprintw(1,  0, "Tasks:  %d total,   %d running,  %d sleeping,   %d stopped,   %d zombie",
+                    stats_len, bnr.state_count.running, bnr.state_count.sleeping, bnr.state_count.stopped, bnr.state_count.zombie);
     mvprintw(2,  0, "%%Cpu(s): 12.3 us,  5.2 sy,  0.0 ni, 82.1 id,  0.0 wa,  0.5 hi,  0.0 si,  0.0 st");
     mvprintw(3,  0, "MiB Mem :  30822.0 total,  19477.0 free,  11121.0 used,    224.0 buff/cache");
     mvprintw(4,  0, "MiB Swap:  29639.6 total,  29639.6 free,      0.0 used.  19562.7 avail Mem");
     
-    attron(COLOR_PAIR(ttop_view.label_color_schema));
-    int coord_y = ttop_view.body_top - 1;
+    attron(COLOR_PAIR(view.label_color_schema));
+    int coord_y = view.body_top - 1;
     mvprintw(coord_y,  0, "   PID");
     mvprintw(coord_y,  6, "  PR");
     mvprintw(coord_y, 10, "  NI\t\t");
@@ -85,15 +98,15 @@ void on_draw(const stat_t stats[], const int stats_len, const view_t ttop_view) 
     mvprintw(coord_y, 46, "%%MEM\t");
     mvprintw(coord_y, 55, "     TIME\t\t");
     mvprintw(coord_y, 65, "COMMAND\t");
-    attroff(COLOR_PAIR(ttop_view.label_color_schema));
+    attroff(COLOR_PAIR(view.label_color_schema));
     use_default_colors();
     
-    for (int i = ttop_view.scroll; i < stats_len && ttop_view.body_top + i - ttop_view.scroll < ttop_view.height; i++) {
+    for (int i = view.scroll; i < stats_len && view.body_top + i - view.scroll < view.height; i++) {
         int hour = stats[i].time / 3600;
         int minute = (stats[i].time - (3600 * hour)) / 60;
         int second = (stats[i].time - (3600 * hour) - (minute * 60));
 
-        coord_y = ttop_view.body_top + i - ttop_view.scroll;
+        coord_y = view.body_top + i - view.scroll;
         mvprintw(coord_y,  0, "%6d\t", stats[i].pid);
         mvprintw(coord_y,  6, "%4ld\t", stats[i].priority);
         mvprintw(coord_y, 10, "%4ld\t", stats[i].nice);
@@ -108,13 +121,17 @@ void on_draw(const stat_t stats[], const int stats_len, const view_t ttop_view) 
     }
 }
 
-void view_init(view_t *this) {
+view_t *view_new() {
+    view_t *this = malloc(sizeof(view_t));
+    
     this->height = this->width = this->scroll = 0;
     this->body_top = 7;
     this->label_color_schema = 1;
     this->body_color_schema = 2;
     init_pair(this->label_color_schema, COLOR_BLACK, COLOR_WHITE);
     init_pair(this->body_color_schema, COLOR_WHITE, COLOR_BLACK);
+
+    return this;
 }
 
 void view_scroll(view_t *this, direction_t to) {
@@ -125,4 +142,24 @@ void view_scroll(view_t *this, direction_t to) {
         if (0 < this->scroll)
             this->scroll --;
     }
+}
+
+banner_t *banner_new() {
+    banner_t *this = malloc(sizeof(banner_t));
+    this->state_count.zombie = 0;
+    this->state_count.running = 0;
+    this->state_count.sleeping = 0;
+    this->state_count.stopped = 0;
+    
+    return this;
+}
+
+void banner_update(banner_t *this, const stat_t stats[], const int stats_len) {
+    time_t rawtime;
+    struct tm *timeinfo;
+    time(&rawtime);
+    timeinfo = localtime(&rawtime);
+    sprintf(this->time, "%d:%d:%d", timeinfo->tm_hour, timeinfo->tm_min, timeinfo->tm_sec);
+
+    stats_count_state(stats, stats_len, &this->state_count);
 }

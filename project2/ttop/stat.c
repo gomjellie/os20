@@ -109,6 +109,41 @@ void stats_update(stat_t stats[], int *stats_length) {
 }
 
 /**
+ * stats에서 running이 몇개인지 sleeping이 몇개인지 등등 세서 res에 담아준다.
+ */
+void stats_count_state(const stat_t stats[], int stats_length, state_count_t *res) {
+    /*
+    D    uninterruptible sleep (usually IO)
+    R    running or runnable (on run queue)
+    S    interruptible sleep (waiting for an event to complete)
+    T    stopped by job control signal
+    t    stopped by debugger during the tracing
+    W    paging (not valid since the 2.6.xx kernel)
+    X    dead (should never be seen)
+    Z    defunct ("zombie") process, terminated but not reaped by its parent
+    */
+   res->running = 0;
+   res->sleeping = 0;
+   res->stopped = 0;
+   res->zombie = 0;
+   
+    for (int i = 0; i < stats_length; i++) {
+        switch (stats[i].state) {
+            case 'D':
+            case 'R':
+            res->running ++; break;
+            case 'S':
+            res->sleeping ++; break;
+            case 'T':
+            case 't':
+            res->stopped ++; break;
+            case 'Z':
+            res->zombie ++; break;
+        }
+    }
+}
+
+/**
  * 디렉토리 이름이 숫자인지 확인 (PID 식별)
  * 숫자면 true, 숫자가 아닌게 섞여있으면 false
  */

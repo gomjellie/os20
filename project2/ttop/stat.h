@@ -47,10 +47,19 @@ typedef struct stat {
      size_t shared;
 } stat_t;
 
+typedef struct _state {
+     int running;
+     int sleeping;
+     int stopped;
+     int zombie;
+} state_count_t;
+
 void stat_update(stat_t *this, int pid);
 
 int stat_cmp(const void *stat1, const void *stat2);
 
 void stats_update(stat_t stats[], int *stats_length);
+
+void stats_count_state(const stat_t stats[], int stats_length, state_count_t *res);
 
 #endif /* __STAT_H__ */
