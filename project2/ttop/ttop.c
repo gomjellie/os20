@@ -169,13 +169,10 @@ void banner_update(banner_t *this, const stat_t stats[], const int stats_len) {
     struct sysinfo info;
     sysinfo(&info);
 
-    int secs;
     int days = info.uptime / 86400;
-    secs = info.uptime % 86400;
-    int hours = (secs / 3600);// - (days * 24);
-    secs = secs % 3600;
-    int mins = secs / 60;
-    int seconds = secs % 60;
+    int hours = (info.uptime / 3600) - (days * 24);
+    int mins = (info.uptime / 60) - (days * 1440) - (hours * 60);
+    int seconds = info.uptime % 60;
     int unit = 1024;
 
     sprintf(this->time, "%02d:%02d:%02d %d", hours, mins, seconds, days);
