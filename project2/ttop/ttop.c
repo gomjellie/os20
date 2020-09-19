@@ -1,12 +1,14 @@
 #include <ncurses.h>
 #include <stdlib.h>
 #include <time.h>
+#include <pwd.h>
 #include <sys/sysinfo.h>
 
 #include "stat.h"
 
 typedef struct banner {
-    char time[16];
+    char uptime[32];
+    char current_time[16];
     char load_avg[16];
     char ram_total[16];
     char ram_free[16];
@@ -89,7 +91,7 @@ void on_draw(const view_t *ttop_view, const stat_t stats[], const int stats_len,
 //   PID USER      PR  NI    VIRT    RES    SHR S  %CPU  %MEM     TIME+ COMMAND
     const banner_t bnr = *banner; // banner
     const view_t view = *ttop_view;
-    mvprintw(0,  0, "ttop - %s days up ,  0 users,  load average: %s", bnr.time, bnr.load_avg);
+    mvprintw(0,  0, "ttop - %s up %s,  0 users,  load average: %s", bnr.current_time, bnr.uptime, bnr.load_avg);
     mvprintw(1,  0, "Tasks:  %d total,   %d running,  %d sleeping,   %d stopped,   %d zombie",
                     stats_len, bnr.state_count.running, bnr.state_count.sleeping, bnr.state_count.stopped, bnr.state_count.zombie);
     mvprintw(2,  0, "%%Cpu(s): 12.3 us,  5.2 sy,  0.0 ni, 82.1 id,  0.0 wa,  0.5 hi,  0.0 si,  0.0 st");
@@ -113,22 +115,31 @@ void on_draw(const view_t *ttop_view, const stat_t stats[], const int stats_len,
     use_default_colors();
     
     for (int i = view.scroll; i < stats_len && view.body_top + i - view.scroll < view.height; i++) {
-        int hour = stats[i].time / 3600;
-        int minute = (stats[i].time - (3600 * hour)) / 60;
-        int second = (stats[i].time - (3600 * hour) - (minute * 60));
+        stat_t stat = stats[i];
+        int hour = stat.time / 3600;
+        int minute = (stat.time - (3600 * hour)) / 60;
+        int second = (stat.time - (3600 * hour) - (minute * 60));
 
         coord_y = view.body_top + i - view.scroll;
-        mvprintw(coord_y,  0, "%6d\t", stats[i].pid);
-        mvprintw(coord_y,  6, "%4ld\t", stats[i].priority);
-        mvprintw(coord_y, 10, "%4ld\t", stats[i].nice);
-        mvprintw(coord_y, 19, "%5lu\t", (unsigned long)(stats[i].vsize / 1024UL));
-        mvprintw(coord_y, 23, "%7ld\t", stats[i].rss);
-        mvprintw(coord_y, 29, "%7d\t", stats[i].shared);
-        mvprintw(coord_y, 37, "%1c\t", stats[i].state);
-        mvprintw(coord_y, 40, "%2.2f\t", stats[i].cpu_usage);
-        mvprintw(coord_y, 46, "%2.2f\t", stats[i].mem_usage);
+        mvprintw(coord_y,  0, "%6d\t", stat.pid);
+        mvprintw(coord_y,  6, "%4ld\t", stat.priority);
+        mvprintw(coord_y, 10, "%4ld\t", stat.nice);
+        mvprintw(coord_y, 19, "%5lu\t", (unsigned long)(stat.vsize / 1024UL));
+        mvprintw(coord_y, 23, "%7ld\t", stat.rss);
+        mvprintw(coord_y, 29, "%7d\t", stat.shared);
+        mvprintw(coord_y, 37, "%1c\t", stat.state);
+        mvprintw(coord_y, 40, "%2.2f\t", stat.cpu_usage);
+        mvprintw(coord_y, 46, "%2.2f\t", stat.mem_usage);
         mvprintw(coord_y, 55, "%3d:%02d:%02d\t", hour, minute, second);
-        mvprintw(coord_y, 65, "%s\t", stats[i].command);
+        mvprintw(coord_y, 65, "%s\t", stat.command);
+
+
+        // struct passwd *p = getpwuid((uid_t)stat.pid);
+
+        // if (p != NULL) {
+        //     mvprintw(coord_y, 80, "%s", p->pw_name);
+        //     // mvprintw(coord_y, 80, "%s", g->gr_name);
+        // }
     }
 }
 
@@ -172,10 +183,16 @@ void banner_update(banner_t *this, const stat_t stats[], const int stats_len) {
     int days = info.uptime / 86400;
     int hours = (info.uptime / 3600) - (days * 24);
     int mins = (info.uptime / 60) - (days * 1440) - (hours * 60);
-    int seconds = info.uptime % 60;
     int unit = 1024;
 
-    sprintf(this->time, "%02d:%02d:%02d %d", hours, mins, seconds, days);
+    time_t rawtime;
+    struct tm * timeinfo;
+
+    time (&rawtime);
+    timeinfo = localtime (&rawtime);
+    sprintf(this->current_time, "%02d:%02d:%02d", timeinfo->tm_hour, timeinfo->tm_min, timeinfo->tm_sec);
+
+    sprintf(this->uptime, "%d days, %02d:%02d", days, hours, mins);
 
     sprintf(this->load_avg, "%.2f %.2f %.2f", info.loads[0] / 10000.0, info.loads[1] / 10000.0, info.loads[2] / 10000.0);
 
