@@ -13,6 +13,10 @@ tty_t *tty_new() {
     return this;
 }
 
+void tty_del(tty_t *this) {
+    free(this);
+}
+
 void tty_update(tty_t *this, char *tid) {
     struct stat statbuf;
     char path_buf[256];

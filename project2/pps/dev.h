@@ -11,6 +11,7 @@ typedef struct _cdev {
 } cdev_t;
 
 cdev_t *cdev_new(size_t ttys_length);
+void cdev_del(cdev_t *this);
 void cdev_update(cdev_t *this);
 char *cdev_find(const cdev_t *this, int ttynr);
 

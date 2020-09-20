@@ -18,6 +18,13 @@ proc_t *proc_new(size_t process_buff_len) {
     return this;
 }
 
+void proc_del(proc_t *this) {
+    for (int i = 0; i < this->processes_length; i++) {
+        process_del(this->processes[i]);
+    }
+    free(this);
+}
+
 void proc_update(proc_t *this) {
     int len = 0;
     DIR *directory;

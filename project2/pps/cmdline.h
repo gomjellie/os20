@@ -7,6 +7,7 @@ typedef struct _cmdline {
 } cmdline_t;
 
 cmdline_t *cmdline_new();
+void cmdline_del(cmdline_t *this);
 void cmdline_update(cmdline_t *this, int pid);
 
 #endif /* __CMDLINE_H__ */

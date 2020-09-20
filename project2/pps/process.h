@@ -14,6 +14,7 @@ typedef struct _process {
 } process_t;
 
 process_t *process_new();
+void process_del(process_t *this);
 
 void process_update(process_t *this, int pid);
 

@@ -59,6 +59,9 @@ int main(int argc, char *argv[]) {
     initscr();
     render(proc, dev, options);
     getch();
+
+    cdev_del(dev);
+    proc_del(proc);
     endwin();
 }
 
@@ -66,16 +69,20 @@ void render(const proc_t *proc, const cdev_t *dev, const int option) {
     int fd = open("/proc/self/fd/0", O_RDONLY);
     char self_tty[32], time_s[32];
     int line = 1;
+    int space = 0;
     sprintf(self_tty, "%s", ttyname(fd));
 
-    mvprintw(0,  0, "  PID");
-    mvprintw(0,  6, "TTY");
-    mvprintw(0, 15, "     TIME");
-    mvprintw(0, 25, "CMD");
+    mvprintw(0,  0, "  PID");     space = space + 6;
+    mvprintw(0,  6, "TTY");       space = space + 9;
+    mvprintw(0, 15, "     TIME"); space = space + 10;
+    mvprintw(0, 25, "CMD");       space = space + 10;
     
     for (int i = 0; i < proc->processes_length; i++) {
         stat_t stat = *proc->processes[i]->stat;
         const char *tty_name = cdev_find(dev, stat.tty_nr);
+        
+        space = 0;
+        
         if (strcmp(stat.tty, self_tty) == 0 || tty_name != NULL) {
             int hour = stat.time / 3600;
             int minute = (stat.time - (3600 * hour)) / 60;

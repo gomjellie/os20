@@ -9,6 +9,7 @@ typedef struct _proc {
 } proc_t;
 
 proc_t *proc_new(size_t process_buff_len);
+void proc_del(proc_t *this);
 void proc_update(proc_t *this);
 
 #endif /* __PROC_H__ */

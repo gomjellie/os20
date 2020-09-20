@@ -10,6 +10,10 @@ cmdline_t *cmdline_new() {
     return this;
 }
 
+void cmdline_del(cmdline_t *this) {
+    free(this);
+}
+
 void cmdline_update(cmdline_t *this, int pid) {
     char path[32];
     sprintf(path, "/proc/%d/cmdline", pid);

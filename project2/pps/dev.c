@@ -18,6 +18,13 @@ cdev_t *cdev_new(size_t ttys_length) {
     return this;
 }
 
+void cdev_del(cdev_t *this) {
+    for (int i = 0; i < this->ttys_length; i++) {
+        tty_del(this->ttys[i]);
+    }
+    free(this);
+}
+
 void cdev_update(cdev_t *this) {
     int len = 0;
     DIR *directory;

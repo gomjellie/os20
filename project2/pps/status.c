@@ -9,6 +9,10 @@ status_t *status_new() {
     return this;
 }
 
+void status_del(status_t *this) {
+    free(this);
+}
+
 void status_update(status_t *this, int pid) {
     char path[32];
     sprintf(path, "/proc/%d/status", pid);
