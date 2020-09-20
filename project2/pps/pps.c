@@ -69,26 +69,31 @@ void render(const proc_t *proc, const cdev_t *dev, const int option) {
     int fd = open("/proc/self/fd/0", O_RDONLY);
     char self_tty[32], time_s[32];
     int line = 1;
-    int space = 0;
+    int x = 0;
     sprintf(self_tty, "%s", ttyname(fd));
 
-    mvprintw(0,  0, "  PID");     space = space + 6;
-    mvprintw(0,  6, "TTY");       space = space + 9;
-    mvprintw(0, 15, "     TIME"); space = space + 10;
+    mvprintw(0,  x, "  PID");     x += 6;
+    mvprintw(0,  x, "TTY");       x += 9;
+
     if (option & OPTION_A) {
-        mvprintw(0, 25, "COMMAND"); space = space + 20;
+        mvprintw(0, x, "STAT"); x += 7;
+    }
+    mvprintw(0,  x, "     TIME"); x += 10;
+    if (option & OPTION_A) {
+        mvprintw(0, x, "COMMAND"); x += 20;
     } else {
-        mvprintw(0, 25, "CMD"); space = space + 10;
+        mvprintw(0, x, "CMD"); x += 10;
     }
     
     for (int i = 0; i < proc->processes_length; i++) {
         stat_t stat = *proc->processes[i]->stat;
         const char *tty_name = cdev_find(dev, stat.tty_nr);
-        space = 0;
+        x = 0;
         
         int condition_a = tty_name != NULL || strcmp(stat.tty, self_tty) == 0;
         int condition_none = strcmp(stat.tty, self_tty) == 0;
         
+        // filter here
         if ((option & OPTION_A) && !condition_a) continue;
         if ((option == OPTION_NONE) && !condition_none) continue;
 
@@ -96,11 +101,22 @@ void render(const proc_t *proc, const cdev_t *dev, const int option) {
         int minute = (stat.time - (3600 * hour)) / 60;
         int second = (stat.time - (3600 * hour) - (minute * 60));
         
+        // render here
         sprintf(time_s, "%03d:%02d:%02d", hour, minute, second);
-        mvprintw(line,  0, "%5d", stat.pid);
-        mvprintw(line,  6, "%5s", tty_name);
-        mvprintw(line, 15, "%8s", time_s);
-        mvprintw(line, 25, "%s\n", (option & OPTION_A) ? proc->processes[i]->cmdline->string : stat.command);
+        mvprintw(line, x, "%5d", stat.pid); x += 6;
+        mvprintw(line, x, "%5s", tty_name); x += 9;
+
+        if (option & OPTION_A) {
+            mvprintw(line, x, "%c", stat.state); x += 7;
+        }
+        mvprintw(line, x, "%8s", time_s);   x += 10;
+
+        if ((option & OPTION_A)) {
+            mvprintw(line, x, "%s\n", proc->processes[i]->cmdline->string); x += 20;
+        } else {
+            mvprintw(line, x, "%s\n", stat.command); x += 10;
+        }
+        
         ++line;
     }
 }
