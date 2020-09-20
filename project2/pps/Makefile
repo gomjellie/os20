@@ -1,10 +1,10 @@
 CC = gcc
 TARGET = pps
-SRCS = pps.c stat.c statm.c process.c cmdline.c proc.c status.c
-OPT = --heap, 4194304, --stack, 4194304
+SRCS = pps.c stat.c statm.c process.c cmdline.c proc.c status.c tty.c dev.c
+OPT = -Wall -pedantic -lncurses
 
 all:
-	$(CC) $(SRCS) -o ${TARGET} -Wall -pedantic -lncurses
+	$(CC) $(OPT) $(SRCS) -o ${TARGET}
 
 run:
 	./${TARGET}

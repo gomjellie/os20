@@ -10,6 +10,7 @@ typedef struct _process {
     cmdline_t *cmdline;
     status_t *status;
     int pid;
+    char tid[16];
 } process_t;
 
 process_t *process_new();

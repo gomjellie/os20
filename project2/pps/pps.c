@@ -4,8 +4,7 @@
 #include <fcntl.h>
 
 #include "proc.h"
-
-#define DEFAULT_FORMAT "%5s %s\t%8s %s\n"
+#include "dev.h"
 
 typedef enum {
     /**
@@ -33,20 +32,22 @@ typedef enum {
     OPTION_X = 4, // X
 } option_t;
 
-void render(const proc_t *proc, const int option);
+void render(const proc_t *proc, const cdev_t *dev, const int option);
 
 int main(int argc, char *argv[]) {
     if (argc > 1) {
         // 옵션 인자가 들어온경우 처리
     }
 
+    cdev_t *dev = cdev_new(128);
     proc_t *proc = proc_new(256);
+    cdev_update(dev);
     proc_update(proc);
     
-    render(proc, OPTION_NONE);
+    render(proc, dev, OPTION_NONE);
 }
 
-void render(const proc_t *proc, const int option) {
+void render(const proc_t *proc, const cdev_t *dev, const int option) {
     int fd = open("/proc/self/fd/0", O_RDONLY);
     char self_tty[32], time_s[32];
     sprintf(self_tty, "%s", ttyname(fd));
@@ -54,13 +55,16 @@ void render(const proc_t *proc, const int option) {
     printf("  PID TTY          TIME CMD\n");
     for (int i = 0; i < proc->processes_length; i++) {
         stat_t stat = *proc->processes[i]->stat;
-        if (strcmp(stat.tty, self_tty) == 0) {
+        // if (strcmp(stat.tty, self_tty) == 0) {
+        // if (stat.tty_nr == 0) continue;
+        const char *tty_name = cdev_find(dev, stat.tty_nr);
+        if (tty_name != NULL) {
             int hour = stat.time / 3600;
             int minute = (stat.time - (3600 * hour)) / 60;
             int second = (stat.time - (3600 * hour) - (minute * 60));
             
             sprintf(time_s, "%02d:%02d:%02d", hour, minute, second);
-            printf("%5d %5s    %8s %s\n", stat.pid, stat.tty, time_s, stat.command);
+            printf("%5d %5s    %8s %s\n", stat.pid, tty_name, time_s, stat.command);
         }
     }
 }
