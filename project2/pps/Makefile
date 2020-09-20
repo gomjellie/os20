@@ -1,8 +1,9 @@
 CC = gcc
 TARGET = pps
+SRCS = pps.c stat.c statm.c process.c cmdline.c proc.c
 
 all:
-	$(CC) pps.c stat.c statm.c -o ${TARGET} -Wall -pedantic -lncurses
+	$(CC) $(SRCS) -o ${TARGET} -Wall -pedantic -lncurses
 
 run:
 	./${TARGET}
@@ -13,4 +14,4 @@ clean:
 	rm ${TARGET};
 	
 debug:
-	$(CC) -g pps.c stat.c statm.c -o ${TARGET} -Wall -pedantic -lncurses
+	$(CC) -g $(SRCS) -o ${TARGET} -Wall -pedantic -lncurses

@@ -7,7 +7,6 @@
 #include <fcntl.h>
 
 static double __get_seconds(unsigned long long starttime);
-static bool __is_number(char *input);
 static void __stat_update_cpu_usage(stat_t *this);
 static void __stat_update_mem_usage(stat_t *this);
 
@@ -78,48 +77,6 @@ void stat_update(stat_t *this, int pid) {
     this->time = __get_seconds(this->starttime);
 
     free(path);
-}
-
-/**
- * /proc 디렉토리에서 숫자이름(pid)들을 찾아서 그 프로세스들의 stat을 업데이트
- * stat_length 로 읽어온 pid개수를 저장해서 호출자에게 넘겨줌.
- */
-void stats_update(stat_t stats[], int *stats_length) {
-    int len = 0;
-    DIR *directory;
-    struct dirent *dir;
-    char *pid_buffer;
-
-    directory = opendir("/proc");
-
-    if (directory == NULL) return;
-
-    while ((dir = readdir(directory)) != NULL && len < 256) {
-        pid_buffer = dir->d_name;
-
-        if (__is_number(pid_buffer) == false)
-            continue;
-
-        stat_update(&stats[len], atoi(pid_buffer));
-        len ++;
-    }
-
-    *stats_length = len;
-}
-
-/**
- * 디렉토리 이름이 숫자인지 확인 (PID 식별)
- * 숫자면 true, 숫자가 아닌게 섞여있으면 false
- */
-static bool __is_number(char *input) {
-    size_t input_len = strlen(input);
-
-    for (int i = 0; i < input_len; i++) {
-        if (isdigit(input[i]) == 0) // 숫자가 아니면 0 리턴함
-            return false;
-    }
-
-    return true;
 }
 
 /* 프로세스 실행 시간 계산 */

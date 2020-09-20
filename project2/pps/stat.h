@@ -52,6 +52,4 @@ void stat_update(stat_t *this, int pid);
 
 int stat_cmp(const void *stat1, const void *stat2);
 
-void stats_update(stat_t stats[], int *stats_length);
-
 #endif /* __STAT_H__ */
