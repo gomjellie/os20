@@ -53,22 +53,28 @@ int main(int argc, char *argv[]) {
 void render(const proc_t *proc, const cdev_t *dev, const int option) {
     int fd = open("/proc/self/fd/0", O_RDONLY);
     char self_tty[32], time_s[32];
-    int line = 0;
+    int line = 1;
     sprintf(self_tty, "%s", ttyname(fd));
 
-    mvprintw(0, 0, "  PID TTY          TIME CMD\n");
+    mvprintw(0,  0, "  PID");
+    mvprintw(0,  6, "TTY");
+    mvprintw(0, 15, "     TIME");
+    mvprintw(0, 25, "CMD");
+    
     for (int i = 0; i < proc->processes_length; i++) {
         stat_t stat = *proc->processes[i]->stat;
-        // if (strcmp(stat.tty, self_tty) == 0) {
-        // if (stat.tty_nr == 0) continue;
         const char *tty_name = cdev_find(dev, stat.tty_nr);
         if (strcmp(stat.tty, self_tty) == 0 || tty_name != NULL) {
             int hour = stat.time / 3600;
             int minute = (stat.time - (3600 * hour)) / 60;
             int second = (stat.time - (3600 * hour) - (minute * 60));
             
-            sprintf(time_s, "%02d:%02d:%02d", hour, minute, second);
-            mvprintw(++line, 0, "%5d %5s    %8s %s\n", stat.pid, tty_name, time_s, proc->processes[i]->cmdline);
+            sprintf(time_s, "%03d:%02d:%02d", hour, minute, second);
+            mvprintw(line,  0, "%5d", stat.pid);
+            mvprintw(line,  6, "%5s", tty_name);
+            mvprintw(line, 15, "%8s", time_s);
+            mvprintw(line, 25, "%s\n", proc->processes[i]->cmdline);
+            ++line;
         }
     }
 }
