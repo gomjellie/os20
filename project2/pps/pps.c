@@ -1,7 +1,7 @@
-#include <ncurses.h>
 #include <stdlib.h>
 #include <unistd.h>
 #include <fcntl.h>
+#include <ncurses.h>
 
 #include "proc.h"
 #include "dev.h"
@@ -44,27 +44,31 @@ int main(int argc, char *argv[]) {
     cdev_update(dev);
     proc_update(proc);
     
+    initscr();
     render(proc, dev, OPTION_NONE);
+    getch();
+    endwin();
 }
 
 void render(const proc_t *proc, const cdev_t *dev, const int option) {
     int fd = open("/proc/self/fd/0", O_RDONLY);
     char self_tty[32], time_s[32];
+    int line = 0;
     sprintf(self_tty, "%s", ttyname(fd));
 
-    printf("  PID TTY          TIME CMD\n");
+    mvprintw(0, 0, "  PID TTY          TIME CMD\n");
     for (int i = 0; i < proc->processes_length; i++) {
         stat_t stat = *proc->processes[i]->stat;
         // if (strcmp(stat.tty, self_tty) == 0) {
         // if (stat.tty_nr == 0) continue;
         const char *tty_name = cdev_find(dev, stat.tty_nr);
-        if (tty_name != NULL) {
+        if (strcmp(stat.tty, self_tty) == 0 || tty_name != NULL) {
             int hour = stat.time / 3600;
             int minute = (stat.time - (3600 * hour)) / 60;
             int second = (stat.time - (3600 * hour) - (minute * 60));
             
             sprintf(time_s, "%02d:%02d:%02d", hour, minute, second);
-            printf("%5d %5s    %8s %s\n", stat.pid, tty_name, time_s, stat.command);
+            mvprintw(++line, 0, "%5d %5s    %8s %s\n", stat.pid, tty_name, time_s, proc->processes[i]->cmdline);
         }
     }
 }

@@ -2,6 +2,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 cmdline_t *cmdline_new() {
     cmdline_t *this = malloc(sizeof(cmdline_t));
@@ -18,7 +19,14 @@ void cmdline_update(cmdline_t *this, int pid) {
     if (!file)
         return;
     
-    fscanf(file, "%31s", this->string);
+    fgets(this->string, sizeof(this->string), file);
+
+    for (int i = 0; i < sizeof(this->string) - 1; i++) {
+        if (this->string[i] == '\0' && this->string[i + 1] == '\0') continue;
+
+        if (this->string[i] == '\0')
+            this->string[i] = ' ';
+    }
 
     fclose(file);
 }

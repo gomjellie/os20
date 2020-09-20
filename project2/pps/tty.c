@@ -17,13 +17,13 @@ void tty_update(tty_t *this, char *tid) {
     struct stat statbuf;
     char path_buf[256];
     
-    sprintf(path_buf, "/dev/tty%s", tid);
+    sprintf(path_buf, "/dev/%s", tid);
 
     lstat(path_buf, &statbuf);
 
     this->major = (int)MAJOR(statbuf.st_rdev);
     this->minor = (int)MINOR(statbuf.st_rdev);
-    snprintf(this->tid, 8, "%s", tid);
+    sprintf(this->tid, "%s", tid);
 }
 
 int tty_is_same(tty_t *this, int ttynr) {

@@ -23,7 +23,6 @@ void cdev_update(cdev_t *this) {
     DIR *directory;
     struct dirent *dir;
     char *tty_buffer;
-    char tid[16];
 
     directory = opendir("/dev");
 
@@ -35,12 +34,7 @@ void cdev_update(cdev_t *this) {
         if (strncmp(tty_buffer, "tty", 3) != 0)
             continue; // tty로 시작하는 파일만 통과시키고 나머지는 빠꾸
 
-        if (strcmp(tty_buffer, "tty") == 0)
-            tid[0] = '\0';
-        else
-            sscanf(tty_buffer, "tty%7s", tid);
-        
-        tty_update(this->ttys[len], tid);
+        tty_update(this->ttys[len], tty_buffer);
         len ++;
     }
 

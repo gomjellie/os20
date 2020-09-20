@@ -3,7 +3,7 @@
 #define __CMDLINE_H__
 
 typedef struct _cmdline {
-    char string[32];
+    char string[128];
 } cmdline_t;
 
 cmdline_t *cmdline_new();
