@@ -40,7 +40,7 @@ int main(int argc, char *argv[]) {
         // 옵션 인자가 들어온경우 처리
     }
 
-    proc_t *proc = proc_new(512);
+    proc_t *proc = proc_new(256);
     proc_update(proc);
     
     render(proc, OPTION_NONE);

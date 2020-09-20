@@ -1,12 +1,14 @@
 #include "stat.h"
 #include "cmdline.h"
+#include "status.h"
 
 #ifndef __PROCESS_H__
 #define __PROCESS_H__
 
 typedef struct _process {
     stat_t *stat;
-    cmdline_t *cmdline;    
+    cmdline_t *cmdline;
+    status_t *status;
     int pid;
 } process_t;
 

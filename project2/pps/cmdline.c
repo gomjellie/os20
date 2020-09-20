@@ -5,6 +5,7 @@
 
 cmdline_t *cmdline_new() {
     cmdline_t *this = malloc(sizeof(cmdline_t));
+
     return this;
 }
 
@@ -17,7 +18,7 @@ void cmdline_update(cmdline_t *this, int pid) {
     if (!file)
         return;
     
-    fscanf(file, "%s", this->string);
+    fscanf(file, "%31s", this->string);
 
     fclose(file);
 }
