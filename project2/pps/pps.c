@@ -75,25 +75,32 @@ void render(const proc_t *proc, const cdev_t *dev, const int option) {
     mvprintw(0,  0, "  PID");     space = space + 6;
     mvprintw(0,  6, "TTY");       space = space + 9;
     mvprintw(0, 15, "     TIME"); space = space + 10;
-    mvprintw(0, 25, "CMD");       space = space + 10;
+    if (option & OPTION_A) {
+        mvprintw(0, 25, "COMMAND"); space = space + 20;
+    } else {
+        mvprintw(0, 25, "CMD"); space = space + 10;
+    }
     
     for (int i = 0; i < proc->processes_length; i++) {
         stat_t stat = *proc->processes[i]->stat;
         const char *tty_name = cdev_find(dev, stat.tty_nr);
-        
         space = 0;
         
-        if (strcmp(stat.tty, self_tty) == 0 || tty_name != NULL) {
-            int hour = stat.time / 3600;
-            int minute = (stat.time - (3600 * hour)) / 60;
-            int second = (stat.time - (3600 * hour) - (minute * 60));
-            
-            sprintf(time_s, "%03d:%02d:%02d", hour, minute, second);
-            mvprintw(line,  0, "%5d", stat.pid);
-            mvprintw(line,  6, "%5s", tty_name);
-            mvprintw(line, 15, "%8s", time_s);
-            mvprintw(line, 25, "%s\n", proc->processes[i]->cmdline);
-            ++line;
-        }
+        int condition_a = tty_name != NULL || strcmp(stat.tty, self_tty) == 0;
+        int condition_none = strcmp(stat.tty, self_tty) == 0;
+        
+        if ((option & OPTION_A) && !condition_a) continue;
+        if ((option == OPTION_NONE) && !condition_none) continue;
+
+        int hour = stat.time / 3600;
+        int minute = (stat.time - (3600 * hour)) / 60;
+        int second = (stat.time - (3600 * hour) - (minute * 60));
+        
+        sprintf(time_s, "%03d:%02d:%02d", hour, minute, second);
+        mvprintw(line,  0, "%5d", stat.pid);
+        mvprintw(line,  6, "%5s", tty_name);
+        mvprintw(line, 15, "%8s", time_s);
+        mvprintw(line, 25, "%s\n", (option & OPTION_A) ? proc->processes[i]->cmdline->string : stat.command);
+        ++line;
     }
 }
