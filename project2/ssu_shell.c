@@ -6,6 +6,7 @@
 #include <unistd.h>
 #include <errno.h>
 #include <stdbool.h>
+#include <pwd.h>
 
 #define MAX_INPUT_SIZE 1024
 #define MAX_TOKEN_SIZE 64
@@ -90,7 +91,7 @@ int main(int argc, char* argv[]) {
                 continue;
             }
 
-            if (cmdc) // not the first command
+            if (cmdc != 1) // not the first command
                 dup2(pipefds[cmdc - 1][0], 0);
             if (cmdc != cmd_length) // if not the last command
                 dup2(pipefds[cmdc][1], 1);
@@ -98,6 +99,13 @@ int main(int argc, char* argv[]) {
             for (int i = 0; i < cmdc; i++) { close(pipefds[i][0]); close(pipefds[i][1]); }
 
             int div_index = queue_front(pipe_queue); // |의 인덱스
+            if (strcmp(tokens[div_index + 1], "pps") == 0 || strcmp(tokens[div_index + 1], "ttop") == 0) {
+                char buf[MAX_TOKEN_SIZE];
+                strcpy(buf, tokens[div_index + 1]);
+                struct passwd *pw = getpwuid(getuid());
+                const char *homedir = pw->pw_dir;
+                sprintf(tokens[div_index + 1], "%s/%s", homedir, buf);
+            }
             int res = execvp(tokens[div_index + 1], tokens + 1 + div_index);
             if (res == -1) {
                 fprintf(stderr, "SSUShell : Incorrect command\n");
