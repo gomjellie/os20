@@ -1,7 +1,12 @@
 CC = gcc
+CC = gcc
+TARGET = ~/ttop
+SRCS = ttop.c stat.c statm.c
+OPT = -Wall -pedantic 
+LIB = -lncurses
 
 all:
-	$(CC) ttop.c stat.c statm.c -o ttop -Wall -pedantic -lncurses
+	$(CC) $(SRCS) -o $(TARGET) $(OPT) $(LIB)
 
 run:
 	./ttop
@@ -9,7 +14,7 @@ run:
 test: all run
 
 clean:
-	rm ttop;
+	rm -f $(TARGET)
 	
 debug:
-	$(CC) -g ttop.c stat.c statm.c -o ttop -Wall -pedantic -lncurses
+	$(CC) -g $(SRCS) -o $(TARGET) $(OPT) $(LIB)
