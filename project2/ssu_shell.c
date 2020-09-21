@@ -38,7 +38,7 @@ int main(int argc, char* argv[]) {
     int status;
     if (argc == 2) {
         fp = fopen(argv[1], "r");
-        if (fp < 0) {
+        if (fp == NULL) {
             printf("File doesn't exists.");
             return -1;
         }
@@ -91,9 +91,9 @@ int main(int argc, char* argv[]) {
             }
 
             if (cmdc) // not the first command
-                if (dup2(pipefds[cmdc - 1][0], 0) < 0) fprintf(stderr, "line 124: dup2() err");
+                dup2(pipefds[cmdc - 1][0], 0);
             if (cmdc != cmd_length) // if not the last command
-                if (dup2(pipefds[cmdc][1], 1) < 0) fprintf(stderr, "line 127: dup2() err");
+                dup2(pipefds[cmdc][1], 1);
 
             for (int i = 0; i < cmdc; i++) { close(pipefds[i][0]); close(pipefds[i][1]); }
 
