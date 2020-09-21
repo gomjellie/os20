@@ -184,6 +184,15 @@ void banner_update(banner_t *this, const stat_t stats[], const int stats_len) {
     int hours = (info.uptime / 3600) - (days * 24);
     int mins = (info.uptime / 60) - (days * 1440) - (hours * 60);
     int unit = 1024;
+    float loads[3];
+
+    FILE *loadavg_file = fopen("/proc/loadavg", "r");
+
+    if (!loadavg_file)
+        return;
+
+    fscanf(loadavg_file, "%f %f %f", &loads[0], &loads[1], &loads[2]);
+    fclose(loadavg_file);
 
     time_t rawtime;
     struct tm * timeinfo;
@@ -194,7 +203,7 @@ void banner_update(banner_t *this, const stat_t stats[], const int stats_len) {
 
     sprintf(this->uptime, "%d days, %02d:%02d", days, hours, mins);
 
-    sprintf(this->load_avg, "%.2f %.2f %.2f", info.loads[0] / 10000.0, info.loads[1] / 10000.0, info.loads[2] / 10000.0);
+    sprintf(this->load_avg, "%.2f %.2f %.2f", loads[0], loads[1], loads[2]);
 
     sprintf(this->ram_total, "%ld", info.totalram / unit);
     sprintf(this->ram_used, "%ld", (info.totalram - info.freeram) / unit);
