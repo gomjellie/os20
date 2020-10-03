@@ -532,3 +532,9 @@ procdump(void)
     cprintf("\n");
   }
 }
+
+int
+hello(void) {
+  cprintf("helloxv6\n");
+  return 0;
+}
