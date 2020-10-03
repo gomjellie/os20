@@ -6,6 +6,7 @@
 #include "x86.h"
 #include "proc.h"
 #include "spinlock.h"
+#include "processInfo.h"
 
 struct {
   struct spinlock lock;
@@ -342,6 +343,7 @@ scheduler(void)
       c->proc = p;
       switchuvm(p);
       p->state = RUNNING;
+      // p->nice ++;
 
       swtch(&(c->scheduler), p->context);
       switchkvm();
@@ -378,6 +380,7 @@ sched(void)
     panic("sched interruptible");
   intena = mycpu()->intena;
   swtch(&p->context, mycpu()->scheduler);
+  p->nice ++;
   mycpu()->intena = intena;
 }
 
@@ -578,4 +581,22 @@ get_max_pid(void) {
     max_pid = max_pid > p->pid ? max_pid : p->pid;
   }
   return max_pid;
+}
+
+int
+get_proc_info(int pid, struct processInfo *pInfo) {
+  struct proc *p;
+
+  for (p = ptable.proc; p < &ptable.proc[NPROC]; p++) {
+    if (p->pid != pid) continue;
+
+    if (p->parent != 0)
+      pInfo->ppid = p->parent->pid;
+    
+    pInfo->psize = p->sz;
+    pInfo->numberContextSwitches = p->nice;
+
+    return 0;
+  }
+  return -1;
 }
