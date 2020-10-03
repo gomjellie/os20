@@ -24,6 +24,7 @@ char* sbrk(int);
 int sleep(int);
 int uptime(void);
 int hello(void);
+int hello_name(char *);
 
 // ulib.c
 int stat(const char*, struct stat*);

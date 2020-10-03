@@ -95,3 +95,13 @@ sys_hello(void)
 {
   return hello();
 }
+
+int
+sys_hello_name(void)
+{
+  char *name;
+  if (argstr(0, &name) < 0)
+    return -1;
+  
+  return hello_name(name);
+}

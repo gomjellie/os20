@@ -538,3 +538,9 @@ hello(void) {
   cprintf("helloxv6\n");
   return 0;
 }
+
+int
+hello_name(char *name) {
+  cprintf("hello %s\n", name);
+  return 0;
+}
