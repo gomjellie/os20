@@ -111,3 +111,9 @@ sys_get_num_proc(void)
 {
   return get_num_proc();
 }
+
+int
+sys_get_max_pid(void)
+{
+  return get_max_pid();
+}

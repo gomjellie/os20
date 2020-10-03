@@ -562,3 +562,20 @@ get_num_proc(void) {
   
   return num_proc;
 }
+
+
+/**
+ * return max pid
+*/
+int
+get_max_pid(void) {
+  int max_pid = 0;
+  struct proc *p;
+
+  for (p = ptable.proc; p < &ptable.proc[NPROC]; p++) {
+    if (p->state == UNUSED) continue;
+
+    max_pid = max_pid > p->pid ? max_pid : p->pid;
+  }
+  return max_pid;
+}
