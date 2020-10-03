@@ -544,3 +544,21 @@ hello_name(char *name) {
   cprintf("hello %s\n", name);
   return 0;
 }
+
+/*
+ * return number of activated process
+ * Active: EMBRYO, SLEEPING, RUNNABLE, RUNNING, ZOMBIE
+ * Non-Active: UNUSED
+*/
+int
+get_num_proc(void) {
+  int num_proc = 0;
+  struct proc *p;
+
+  for (p = ptable.proc; p < &ptable.proc[NPROC]; p++) {
+    if (p->state == UNUSED) continue;
+    num_proc ++;
+  }
+  
+  return num_proc;
+}

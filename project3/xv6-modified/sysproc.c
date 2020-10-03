@@ -105,3 +105,9 @@ sys_hello_name(void)
   
   return hello_name(name);
 }
+
+int
+sys_get_num_proc(void)
+{
+  return get_num_proc();
+}
