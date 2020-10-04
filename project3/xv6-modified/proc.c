@@ -326,7 +326,8 @@ wait(void)
 void
 scheduler(void)
 {
-  struct proc *p;
+  const int prio_delta = 1;
+  struct proc *p, *prp;
   struct cpu *c = mycpu();
   c->proc = 0;
   
@@ -337,8 +338,15 @@ scheduler(void)
     // Loop over process table looking for process to run.
     acquire(&ptable.lock);
     for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
+      struct proc *highest_proc = p;
       if(p->state != RUNNABLE)
         continue;
+      
+      for(prp = ptable.proc; prp < &ptable.proc[NPROC]; prp++) { // get the proc that has highest prio
+        if ((prp->state == RUNNABLE) && (highest_proc->prio < prp->prio))
+          highest_proc = prp;
+      }
+      p = highest_proc;
 
       // Switch to chosen process.  It is the process's job
       // to release ptable.lock and then reacquire it
@@ -346,9 +354,11 @@ scheduler(void)
       c->proc = p;
       switchuvm(p);
       p->state = RUNNING;
-
+      
       swtch(&(c->scheduler), p->context);
       p->nice ++;
+      p->prio -= prio_delta;
+      if (p->prio < 0) p->prio = 0;
       switchkvm();
 
       // Process is done running for now.
