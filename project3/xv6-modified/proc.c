@@ -88,6 +88,7 @@ allocproc(void)
 
 found:
   p->state = EMBRYO;
+  p->nice = 0;
   p->pid = nextpid++;
 
   release(&ptable.lock);
@@ -343,9 +344,9 @@ scheduler(void)
       c->proc = p;
       switchuvm(p);
       p->state = RUNNING;
-      // p->nice ++;
 
       swtch(&(c->scheduler), p->context);
+      p->nice ++;
       switchkvm();
 
       // Process is done running for now.
