@@ -29,6 +29,8 @@ int hello_name(char *);
 int get_num_proc(void);
 int get_max_pid(void);
 int get_proc_info(int, struct processInfo*);
+int get_prio(void);
+int set_prio(int);
 
 // ulib.c
 int stat(const char*, struct stat*);

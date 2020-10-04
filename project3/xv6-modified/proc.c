@@ -602,3 +602,28 @@ get_proc_info(int pid, struct processInfo *pInfo) {
   }
   return -1;
 }
+
+int
+get_prio(void) {
+  struct proc *p;
+  int ret;
+  
+  acquire(&ptable.lock);
+  p = myproc();
+  ret = p->prio;
+  release(&ptable.lock);
+
+  return ret;
+}
+
+int
+set_prio(int n) {
+  struct proc *p;
+  
+  acquire(&ptable.lock);
+  p = myproc();
+  p->prio = n;
+  release(&ptable.lock);
+
+  return 0;
+}
