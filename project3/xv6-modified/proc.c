@@ -89,6 +89,7 @@ allocproc(void)
 found:
   p->state = EMBRYO;
   p->nice = 0;
+  p->prio = 0;
   p->pid = nextpid++;
 
   release(&ptable.lock);
@@ -296,6 +297,7 @@ wait(void)
         p->parent = 0;
         p->name[0] = 0;
         p->killed = 0;
+        p->prio = 0;
         p->state = UNUSED;
         release(&ptable.lock);
         return pid;
@@ -381,7 +383,6 @@ sched(void)
     panic("sched interruptible");
   intena = mycpu()->intena;
   swtch(&p->context, mycpu()->scheduler);
-  p->nice ++;
   mycpu()->intena = intena;
 }
 
