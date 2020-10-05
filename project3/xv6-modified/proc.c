@@ -343,7 +343,7 @@ scheduler(void)
         continue;
       
       for(prp = ptable.proc; prp < &ptable.proc[NPROC]; prp++) { // get the proc that has highest prio
-        if ((prp->state == RUNNABLE) && (highest_proc->prio < prp->prio))
+        if ((prp->state == RUNNABLE) && (highest_proc->prio <= prp->prio))
           highest_proc = prp;
       }
       p = highest_proc;
@@ -358,7 +358,6 @@ scheduler(void)
       swtch(&(c->scheduler), p->context);
       p->nice ++;
       p->prio -= prio_delta;
-      if (p->prio < 0) p->prio = 0;
       switchkvm();
 
       // Process is done running for now.

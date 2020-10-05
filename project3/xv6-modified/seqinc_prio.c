@@ -35,7 +35,7 @@ int main(int argc, char *argv[])
 
     for (int i = 0; i < N; i++)
     {
-        int priority = 100*i + 1 ;
+        int priority = 15*i + 1 ;
 
         int ret = fork();
         if (ret == 0)
