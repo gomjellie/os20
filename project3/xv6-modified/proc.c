@@ -218,6 +218,7 @@ fork(void)
   acquire(&ptable.lock);
 
   np->state = RUNNABLE;
+  np->prio = curproc->prio;
 
   release(&ptable.lock);
 
@@ -326,28 +327,27 @@ wait(void)
 void
 scheduler(void)
 {
-  const int prio_delta = 1;
-  struct proc *p, *prp;
+  struct proc *p; //, *prp;
   struct cpu *c = mycpu();
   c->proc = 0;
   
-  for(;;){
+  for(int i = 0;; i++){
     // Enable interrupts on this processor.
     sti();
 
+    int highest = 0;
+
+    for (p = ptable.proc; p < &ptable.proc[NPROC]; p++) {
+      if (p->state != RUNNABLE) continue;
+      if (p->prio >= highest) highest = p->prio;
+    }
     // Loop over process table looking for process to run.
     acquire(&ptable.lock);
     for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
-      struct proc *highest_proc = p;
-      if(p->state != RUNNABLE)
+      // struct proc *highest_proc = p;
+      if(p->state != RUNNABLE || p->prio != highest)
         continue;
       
-      for(prp = ptable.proc; prp < &ptable.proc[NPROC]; prp++) { // get the proc that has highest prio
-        if ((prp->state == RUNNABLE) && (highest_proc->prio <= prp->prio))
-          highest_proc = prp;
-      }
-      p = highest_proc;
-
       // Switch to chosen process.  It is the process's job
       // to release ptable.lock and then reacquire it
       // before jumping back to us.
@@ -357,7 +357,6 @@ scheduler(void)
       
       swtch(&(c->scheduler), p->context);
       p->nice ++;
-      p->prio -= prio_delta;
       switchkvm();
 
       // Process is done running for now.
@@ -537,7 +536,7 @@ procdump(void)
       state = states[p->state];
     else
       state = "???";
-    cprintf("%d %s %s", p->pid, state, p->name);
+    cprintf("%d %s %s %d", p->pid, state, p->name, p->prio / 100);
     if(p->state == SLEEPING){
       getcallerpcs((uint*)p->context->ebp+2, pc);
       for(i=0; i<10 && pc[i] != 0; i++)
@@ -545,6 +544,7 @@ procdump(void)
     }
     cprintf("\n");
   }
+  cprintf("\n");
 }
 
 int
@@ -618,8 +618,8 @@ get_prio(void) {
   int ret;
   
   acquire(&ptable.lock);
-  p = myproc();
-  ret = p->prio;
+  p = mycpu()->proc;
+  ret = p->prio / 100;
   release(&ptable.lock);
 
   return ret;
@@ -630,8 +630,8 @@ set_prio(int n) {
   struct proc *p;
   
   acquire(&ptable.lock);
-  p = myproc();
-  p->prio = n;
+  p = mycpu()->proc;
+  p->prio = n * 100;
   release(&ptable.lock);
 
   return 0;
