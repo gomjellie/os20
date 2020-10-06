@@ -327,11 +327,11 @@ wait(void)
 void
 scheduler(void)
 {
-  struct proc *p; //, *prp;
+  struct proc *p;
   struct cpu *c = mycpu();
   c->proc = 0;
   
-  for(int i = 0;; i++){
+  for(;;){
     // Enable interrupts on this processor.
     sti();
 
@@ -344,17 +344,16 @@ scheduler(void)
     // Loop over process table looking for process to run.
     acquire(&ptable.lock);
     for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
-      // struct proc *highest_proc = p;
       if(p->state != RUNNABLE || p->prio != highest)
         continue;
-      
+
       // Switch to chosen process.  It is the process's job
       // to release ptable.lock and then reacquire it
       // before jumping back to us.
       c->proc = p;
       switchuvm(p);
       p->state = RUNNING;
-      
+
       swtch(&(c->scheduler), p->context);
       p->nice ++;
       switchkvm();
@@ -618,7 +617,7 @@ get_prio(void) {
   int ret;
   
   acquire(&ptable.lock);
-  p = mycpu()->proc;
+  p = myproc();
   ret = p->prio;
   release(&ptable.lock);
 
@@ -630,7 +629,7 @@ set_prio(int n) {
   struct proc *p;
   
   acquire(&ptable.lock);
-  p = mycpu()->proc;
+  p = myproc();
   p->prio = n;
   release(&ptable.lock);
 
