@@ -536,7 +536,7 @@ procdump(void)
       state = states[p->state];
     else
       state = "???";
-    cprintf("%d %s %s %d", p->pid, state, p->name, p->prio / 100);
+    cprintf("%d %s %s %d", p->pid, state, p->name, p->prio);
     if(p->state == SLEEPING){
       getcallerpcs((uint*)p->context->ebp+2, pc);
       for(i=0; i<10 && pc[i] != 0; i++)
@@ -619,7 +619,7 @@ get_prio(void) {
   
   acquire(&ptable.lock);
   p = mycpu()->proc;
-  ret = p->prio / 100;
+  ret = p->prio;
   release(&ptable.lock);
 
   return ret;
@@ -631,7 +631,7 @@ set_prio(int n) {
   
   acquire(&ptable.lock);
   p = mycpu()->proc;
-  p->prio = n * 100;
+  p->prio = n;
   release(&ptable.lock);
 
   return 0;
