@@ -600,6 +600,7 @@ get_proc_info(int pid, struct processInfo *pInfo) {
   for (p = ptable.proc; p < &ptable.proc[NPROC]; p++) {
     if (p->pid != pid) continue;
 
+    pInfo->ppid = 0;
     if (p->parent != 0)
       pInfo->ppid = p->parent->pid;
     
