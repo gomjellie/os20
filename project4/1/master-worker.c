@@ -36,10 +36,7 @@ void *generate_requests_loop(void *data)
 
   if (thread_id == num_masters - 1) end += total_items % num_masters;
 
-  for (item_to_produce = start; item_to_produce < end; item_to_produce++) {
-    // if(item_to_produce >= total_items)
-	  //   break;
- 
+  for (item_to_produce = start; item_to_produce < end; item_to_produce++) { 
     buffer[curr_buf_size++] = item_to_produce;
     print_produced(item_to_produce, thread_id);
   }
@@ -60,9 +57,8 @@ void *generate_responses_loop(void *data)
   if (thread_id == 0) end += total_items % num_workers;
 
   for (item_to_consume = start; item_to_consume < end; item_to_consume++) {
-    
     int consumed = buffer[--curr_buf_size];
-    // buffer[curr_buf_size] = 0;
+    buffer[curr_buf_size] = 0;
     print_consumed(consumed, thread_id);
   }
   pthread_mutex_unlock(&mutex);
