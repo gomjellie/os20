@@ -50,7 +50,8 @@ void *generate_requests_loop(void *data)
     pthread_mutex_unlock(&mutex);
   }
   pthread_mutex_lock(&mutex);
-  pthread_cond_signal(&cond_can_consume);
+  if (curr_buf_size >= 1)
+    pthread_cond_signal(&cond_can_consume);
   pthread_mutex_unlock(&mutex);
 
   return 0;
@@ -69,7 +70,7 @@ void *generate_responses_loop(void *data)
 
   for (int item_to_consume = start; item_to_consume < end; item_to_consume++) {
     pthread_mutex_lock(&mutex);
-    if (curr_buf_size == 0) {
+    if (curr_buf_size <= 0) {
       pthread_cond_signal(&cond_can_produce);
       pthread_cond_wait(&cond_can_consume, &mutex);
     }
@@ -116,9 +117,7 @@ int main(int argc, char *argv[])
   for (i = 0; i < num_masters; i++)
     pthread_create(&master_threads[i], NULL, generate_requests_loop, (void *)&master_thread_ids[i]);
   
-  // pthread_mutex_lock(&mutex);
-  // pthread_cond_wait(&cond_can_consume, &mutex);
-  // pthread_mutex_unlock(&mutex);
+  usleep(9000);
 
   //create worker consumer threads
   worker_thread_ids = malloc(sizeof(int) * num_workers);
@@ -133,14 +132,17 @@ int main(int argc, char *argv[])
   for (i = 0; i < num_masters; i++) {
     pthread_join(master_threads[i], NULL);
     printf("master %d joined\n", i);
-    pthread_cond_broadcast(&cond_can_consume);
   }
+  pthread_mutex_lock(&mutex);
+  if (curr_buf_size >= 1)
+    pthread_cond_signal(&cond_can_consume);
+  pthread_mutex_unlock(&mutex);
 
   for (i = 0; i < num_workers; i++) {
     pthread_join(worker_threads[i], NULL);
     printf("worker %d joined\n", i);
-    pthread_cond_broadcast(&cond_can_produce);
   }
+  pthread_cond_broadcast(&cond_can_produce);
   
   /*----Deallocating Buffers---------------------*/
   pthread_mutex_destroy(&mutex);
