@@ -86,7 +86,7 @@ int main(int argc, char *argv[])
     threads = (pthread_t*) malloc(num_threads * (sizeof(pthread_t)));
 
     int count = 0;
-    for(int i = 0; i < read_num_threads; i++)
+    for (int i = 0; i < read_num_threads; i++)
     {
         int *arg = (int *)malloc((sizeof(int)));
         if (arg == NULL) {
@@ -116,8 +116,9 @@ int main(int argc, char *argv[])
         }
         count++;
     }
+	// usleep(500);
 
-    for(int i = 0; i < read_num_threads; i++) {
+    for (int i = 0; i < read_num_threads; i++) {
         int *arg = (int *)malloc((sizeof(int)));
         if (arg == NULL) {
             printf("Couldn't allocate memory for thread arg.\n");
@@ -133,10 +134,10 @@ int main(int argc, char *argv[])
     }
 
 
-    for(int i=0;i<num_threads; i++)
+    for (int i = 0; i < num_threads; i++)
         pthread_join(threads[i],NULL);
 
-    // for(int i=0; i<read_num_threads*2; i++)
+    // for (int i = 0; i < read_num_threads * 2; i++)
     //     printf("Reader %d Lock Time: %ld Unlock Time: %ld\n", i, readerAcquireTime[i], readerReleaseTime[i]);
 
     // for (int i = 0; i < write_num_threads; i++)

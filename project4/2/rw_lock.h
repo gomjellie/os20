@@ -5,7 +5,18 @@
 
 struct rw_lock
 {
+    long num_readers;
+    long num_writers;
 
+    pthread_cond_t cond_write;
+    pthread_cond_t cond_read;
+    pthread_cond_t cond_read_queue;
+
+    pthread_mutex_t cmutex_write; // cond mutex
+    pthread_mutex_t cmutex_read;
+
+    pthread_mutex_t mutex_write;
+    pthread_mutex_t mutex_read;
 };
 
 void init_rwlock(struct rw_lock * rw);
