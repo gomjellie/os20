@@ -148,7 +148,9 @@ int main(int argc, char *argv[])
   pthread_mutex_destroy(&mutex);
   free(buffer);
   free(master_thread_ids);
+  free(worker_thread_ids);
   free(master_threads);
+  free(worker_threads);
   
   return 0;
 }
