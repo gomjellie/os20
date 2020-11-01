@@ -39,7 +39,7 @@ void *generate_requests_loop(void *data)
 
   for (int idx = start; idx < end; idx++) {
     pthread_mutex_lock(&mutex);
-    if (curr_buf_size == max_buf_size) {
+    while (curr_buf_size >= max_buf_size) {
       pthread_cond_signal(&cond_can_consume);
       if (item_to_produce != total_items)
         pthread_cond_wait(&cond_can_produce, &mutex); // 자리 날때까지 기다림
@@ -70,7 +70,7 @@ void *generate_responses_loop(void *data)
 
   for (int item_to_consume = start; item_to_consume < end; item_to_consume++) {
     pthread_mutex_lock(&mutex);
-    if (curr_buf_size <= 0) {
+    while (curr_buf_size <= 0) {
       pthread_cond_signal(&cond_can_produce);
       pthread_cond_wait(&cond_can_consume, &mutex);
     }
