@@ -114,7 +114,7 @@ int main(int argc, char *argv[])
     	}
         count++;
     }
-    usleep(50000);
+    usleep(500);
 
     for (int i = 0; i < read_num_threads; i++) {
         int *arg = (int *)malloc((sizeof(int)));
