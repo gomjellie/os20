@@ -10,7 +10,6 @@ struct rw_lock
 
     pthread_cond_t cond_write;
     pthread_cond_t cond_read;
-    pthread_cond_t cond_read_queue;
 
     pthread_mutex_t cmutex_write; // cond mutex
     pthread_mutex_t cmutex_read;

@@ -1,6 +1,8 @@
 #include "rw_lock.h"
 
-#define PRINT_FUNC_CALL
+#ifndef PRINT_FUNC_CALL
+// #define PRINT_FUNC_CALL
+#endif
 
 void init_rwlock(struct rw_lock * rw)
 {
@@ -8,7 +10,6 @@ void init_rwlock(struct rw_lock * rw)
   *rw = (struct rw_lock) {
     .num_readers = 0,
     .num_writers = 0,
-    .cond_read_queue = PTHREAD_COND_INITIALIZER,
     .cond_read = PTHREAD_COND_INITIALIZER,
     .cond_write = PTHREAD_COND_INITIALIZER,
     .cmutex_read = PTHREAD_MUTEX_INITIALIZER,
@@ -33,8 +34,6 @@ void r_lock(struct rw_lock * rw)
     pthread_cond_wait(&rw->cond_write, &rw->cmutex_write);
   }
   pthread_mutex_unlock(&rw->cmutex_write);
-
-  // pthread_mutex_lock(&rw->mutex_read);
 }
 
 void r_unlock(struct rw_lock * rw)
@@ -51,8 +50,6 @@ void r_unlock(struct rw_lock * rw)
     pthread_cond_broadcast(&rw->cond_read);
   
   pthread_mutex_unlock(&rw->cmutex_read);
-
-  // pthread_mutex_unlock(&rw->mutex_read);
 }
 
 void w_lock(struct rw_lock * rw)

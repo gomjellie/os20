@@ -1,7 +1,7 @@
 #include "rw_lock.h"
 
 #ifndef PRINT_FUNC_CALL
-#define PRINT_FUNC_CALL
+// #define PRINT_FUNC_CALL
 #endif
 
 void init_rwlock(struct rw_lock * rw)

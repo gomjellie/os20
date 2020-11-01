@@ -101,6 +101,7 @@ int main(int argc, char *argv[])
         }
         count++;
     }
+	usleep(500);
 
     for (int i = 0; i < write_num_threads; i++) {
         int *arg = (int *)malloc((sizeof(int)));
