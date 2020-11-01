@@ -37,17 +37,21 @@ void *generate_requests_loop(void *data)
 
   if (thread_id == num_masters - 1) end += total_items % num_masters;
 
-  for (item_to_produce = start; item_to_produce < end; item_to_produce++) {
+  for (int idx = start; idx < end; idx++) {
     pthread_mutex_lock(&mutex);
     if (curr_buf_size == max_buf_size) {
       pthread_cond_signal(&cond_can_consume);
-      pthread_cond_wait(&cond_can_produce, &mutex); // 자리 날때까지 기다림
+      if (item_to_produce != total_items)
+        pthread_cond_wait(&cond_can_produce, &mutex); // 자리 날때까지 기다림
     }
-    buffer[curr_buf_size++] = item_to_produce;
-    print_produced(item_to_produce, thread_id);
+    buffer[curr_buf_size++] = idx;
+    print_produced(idx, thread_id);
+    item_to_produce++;
     pthread_mutex_unlock(&mutex);
   }
+  pthread_mutex_lock(&mutex);
   pthread_cond_signal(&cond_can_consume);
+  pthread_mutex_unlock(&mutex);
 
   return 0;
 }
@@ -74,7 +78,9 @@ void *generate_responses_loop(void *data)
     print_consumed(consumed, thread_id);
     pthread_mutex_unlock(&mutex);
   }
+  pthread_mutex_lock(&mutex);
   pthread_cond_signal(&cond_can_produce);
+  pthread_mutex_unlock(&mutex);
   
   return 0;
 }
@@ -110,9 +116,9 @@ int main(int argc, char *argv[])
   for (i = 0; i < num_masters; i++)
     pthread_create(&master_threads[i], NULL, generate_requests_loop, (void *)&master_thread_ids[i]);
   
-  pthread_mutex_lock(&mutex);
-  pthread_cond_wait(&cond_can_consume, &mutex);
-  pthread_mutex_unlock(&mutex);
+  // pthread_mutex_lock(&mutex);
+  // pthread_cond_wait(&cond_can_consume, &mutex);
+  // pthread_mutex_unlock(&mutex);
 
   //create worker consumer threads
   worker_thread_ids = malloc(sizeof(int) * num_workers);
@@ -127,11 +133,13 @@ int main(int argc, char *argv[])
   for (i = 0; i < num_masters; i++) {
     pthread_join(master_threads[i], NULL);
     printf("master %d joined\n", i);
+    pthread_cond_broadcast(&cond_can_consume);
   }
 
   for (i = 0; i < num_workers; i++) {
     pthread_join(worker_threads[i], NULL);
     printf("worker %d joined\n", i);
+    pthread_cond_broadcast(&cond_can_produce);
   }
   
   /*----Deallocating Buffers---------------------*/
