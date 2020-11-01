@@ -48,7 +48,7 @@ void *Writer(void* arg)
     pthread_spin_unlock(&spinlock);
 
     // printf("Writer: %d has acquired the lock\n",threadNUmber);
-        usleep(10000);
+    usleep(10000);
 
     pthread_spin_lock(&spinlock);
     writerReleaseTime[threadNUmber] = indx;
@@ -76,17 +76,17 @@ int main(int argc, char *argv[])
     write_num_threads = atoi(argv[2]);
 
     indx = 0;
-    readerAcquireTime = malloc(read_num_threads*2*sizeof(long));
-    readerReleaseTime = malloc(read_num_threads*2*sizeof(long));
-    writerAcquireTime = malloc(write_num_threads*sizeof(long));
-    writerReleaseTime = malloc(write_num_threads*sizeof(long));
+    readerAcquireTime = malloc(read_num_threads * 2 * sizeof(long));
+    readerReleaseTime = malloc(read_num_threads * 2 * sizeof(long));
+    writerAcquireTime = malloc(write_num_threads * sizeof(long));
+    writerReleaseTime = malloc(write_num_threads * sizeof(long));
 
-    int num_threads = 2*read_num_threads + write_num_threads;
+    int num_threads = 2 * read_num_threads + write_num_threads;
 
     threads = (pthread_t*) malloc(num_threads * (sizeof(pthread_t)));
 
     int count = 0;
-    for(int i=0; i<read_num_threads; i++)
+    for(int i = 0; i < read_num_threads; i++)
     {
         int *arg = (int *)malloc((sizeof(int)));
         if (arg == NULL) {
@@ -95,42 +95,37 @@ int main(int argc, char *argv[])
         }
         *arg = i;
         int ret = pthread_create(threads+count, NULL, Reader, (void*) arg);
-        if(ret){
-                printf("Error - pthread_create() return code: %d\n",ret);
-                exit(EXIT_FAILURE);
+        if (ret) {
+            printf("Error - pthread_create() return code: %d\n",ret);
+            exit(EXIT_FAILURE);
         }
         count++;
     }
 
-    for(int i=0;i<write_num_threads;i++)
-    {
+    for (int i = 0; i < write_num_threads; i++) {
         int *arg = (int *)malloc((sizeof(int)));
-        if (arg == NULL){
+        if (arg == NULL) {
             printf("Couldn't allocate memory for thread arg.\n");
             exit(EXIT_FAILURE);
         }
         *arg = i;
         int ret = pthread_create(threads+count, NULL, Writer,( void*) arg);
-        if(ret)
-        {
-                printf("Error - pthread_create() return code: %d\n",ret);
-                exit(EXIT_FAILURE);
+        if (ret) {
+            printf("Error - pthread_create() return code: %d\n",ret);
+            exit(EXIT_FAILURE);
         }
         count++;
     }
 
-    for(int i=0;i<read_num_threads;i++)
-    {
+    for(int i = 0; i < read_num_threads; i++) {
         int *arg = (int *)malloc((sizeof(int)));
-        if (arg == NULL)
-        {
+        if (arg == NULL) {
             printf("Couldn't allocate memory for thread arg.\n");
             exit(EXIT_FAILURE);
         }
         *arg = read_num_threads + i;
         int ret = pthread_create(threads+count,NULL,Reader,(void*) arg);
-        if(ret)
-        {
+        if (ret) {
             printf("Error - pthread_create() return code: %d\n",ret);
             exit(EXIT_FAILURE);
         }
@@ -153,13 +148,13 @@ int main(int argc, char *argv[])
     long *min_writer_acquire_time = min_element(writerAcquireTime, writerAcquireTime + write_num_threads);
 
     // check if all readers get lock immediately
-    if ((read_num_threads > 0) && (*max_reader_acquire_time > *min_reader_release_time)){
+    if ((read_num_threads > 0) && (*max_reader_acquire_time > *min_reader_release_time)) {
         printf("Reader should not wait to acquire lock\n");
         exit(0);
     }
 
     // All readers get lock before any writer
-    if ((read_num_threads > 0) && (write_num_threads > 0) && (*min_writer_acquire_time < *max_reader_release_time)){
+    if ((read_num_threads > 0) && (write_num_threads > 0) && (*min_writer_acquire_time < *max_reader_release_time)) {
         printf("All readers get lock before any writer\n");
         exit(0);
     }
