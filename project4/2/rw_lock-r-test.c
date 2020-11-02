@@ -1,12 +1,7 @@
 #include "rw_lock.h"
 
-#ifndef PRINT_FUNC_CALL
-// #define PRINT_FUNC_CALL
-#endif
-
 void init_rwlock(struct rw_lock * rw)
 {
-  //	Write the code for initializing your read-write lock.
   *rw = (struct rw_lock) {
     .num_readers = 0,
     .num_writers = 0,
@@ -21,10 +16,6 @@ void init_rwlock(struct rw_lock * rw)
 
 void r_lock(struct rw_lock * rw)
 {
-  //	Write the code for aquiring read-write lock by the reader.
-#ifdef PRINT_FUNC_CALL
-  printf("r_lock called\n");
-#endif
   pthread_mutex_lock(&rw->cmutex_read);
   rw->num_readers ++;
   pthread_mutex_unlock(&rw->cmutex_read);
@@ -38,10 +29,6 @@ void r_lock(struct rw_lock * rw)
 
 void r_unlock(struct rw_lock * rw)
 {
-  //	Write the code for releasing read-write lock by the reader.
-#ifdef PRINT_FUNC_CALL
-  printf("r_unlock called\n");
-#endif
   pthread_mutex_lock(&rw->cmutex_read);
   if (rw->num_readers > 0)
     rw->num_readers --;
@@ -54,10 +41,6 @@ void r_unlock(struct rw_lock * rw)
 
 void w_lock(struct rw_lock * rw)
 {
-  //	Write the code for aquiring read-write lock by the writer.
-#ifdef PRINT_FUNC_CALL
-  printf("w_lock called\n");
-#endif
   pthread_mutex_lock(&rw->cmutex_read);
   while (rw->num_readers > 0) {
     pthread_cond_wait(&rw->cond_read, &rw->cmutex_read);
@@ -73,10 +56,6 @@ void w_lock(struct rw_lock * rw)
 
 void w_unlock(struct rw_lock * rw)
 {
-  //	Write the code for releasing read-write lock by the writer.
-#ifdef PRINT_FUNC_CALL
-  printf("w_unlock called\n");
-#endif
   pthread_mutex_lock(&rw->cmutex_write);
   if (rw->num_writers > 0)
     rw->num_writers --;
