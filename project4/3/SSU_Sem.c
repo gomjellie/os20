@@ -29,12 +29,12 @@ void SSU_Sem_down(SSU_Sem *s) {
 #endif
   pthread_mutex_lock(&s->mutex_counter);
 
-  while (s->counter <= 0) {
+  s->counter --;
+  usleep(500);
+  while (s->counter < 0) {
     // printf("counter: %d\n", s->counter);
     pthread_cond_wait(&s->signal, &s->mutex_counter);
   }
-  s->counter --;
-  usleep(500);
   
   pthread_mutex_unlock(&s->mutex_counter);
   
