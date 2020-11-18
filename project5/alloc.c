@@ -40,7 +40,6 @@ chunk_t *chunk_new(size_t offset, int sz) {
         .prev = NULL,
     };
     
-    // printf("counter %d", counter);
     return &mman.chunks[chunk_idx];
 }
 
@@ -114,29 +113,26 @@ void dealloc(char *__ptr) {
     size_t offset = __ptr - mman.addr;
     chunk_t *victim = &mman.chunks[(offset / MINALLOC)];
 
-    // 찾음
-    if (victim->offset == offset) {
-        chunk_t *piv = victim; // pivot
-        chunk_t *r_seeker = victim->next; // right seeker
-        chunk_t *l_seeker = victim->prev; // left seeker
+    chunk_t *piv = victim; // pivot
+    chunk_t *r_seeker = victim->next; // right seeker
+    chunk_t *l_seeker = victim->prev; // left seeker
 
-        // merge piv and right
-        if (r_seeker != NULL && r_seeker->assigned == false) { // not assigned, needs merge
-            if (r_seeker->next)
-                r_seeker->next->prev = piv;
-            
-            piv->next = r_seeker->next;
-            piv->sz += r_seeker->sz;
-        }
-        piv->assigned = false;
-
-        // merge left and piv
-        if (l_seeker == NULL || l_seeker->assigned) return;
-
-        if (l_seeker->prev)
-            l_seeker->prev->next = piv;
+    // merge piv and right
+    if (r_seeker != NULL && r_seeker->assigned == false) { // not assigned, needs merge
+        if (r_seeker->next)
+            r_seeker->next->prev = piv;
         
-        l_seeker->next = piv->next;
-        l_seeker->sz += piv->sz;
+        piv->next = r_seeker->next;
+        piv->sz += r_seeker->sz;
     }
+    piv->assigned = false;
+
+    // merge left and piv
+    if (l_seeker == NULL || l_seeker->assigned) return;
+
+    if (l_seeker->prev)
+        l_seeker->prev->next = piv;
+    
+    l_seeker->next = piv->next;
+    l_seeker->sz += piv->sz;
 }
