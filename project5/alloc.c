@@ -6,30 +6,34 @@
 #include <sys/mman.h>
 #include <stdbool.h>
 
+#define CHUNK_BUF_SIZE (PAGESIZE / MINALLOC)
+
 typedef struct chunk {
     struct chunk *next;
     struct chunk *prev;
     int sz;
     size_t offset;
     bool assigned;
-    bool u;
 } chunk_t;
 
-#define CHUNK_BUF_SIZE (PAGESIZE / MINALLOC)
-static chunk_t chunks[CHUNK_BUF_SIZE];
+typedef struct _mman {
+    int initialized;
+    char *addr;
+    chunk_t *chunk_list;
+    chunk_t chunks[CHUNK_BUF_SIZE];
+} mman_t;
 
-chunk_t *chunk_new(int sz) {
-    static int counter = 0;
+static mman_t mman;
+
+chunk_t *chunk_new(size_t offset, int sz) {
+    size_t chunk_idx = (offset / MINALLOC);
 
     if (sz % MINALLOC != 0) {
         perror("chunk_new sizeerror");
         exit(-1);
     }
 
-    for (; chunks[counter].u; counter = (counter + 1) % CHUNK_BUF_SIZE);
-
-    chunks[counter] = (chunk_t) {
-        .u = true,
+    mman.chunks[chunk_idx] = (chunk_t) {
         .assigned = false,
         .sz = sz,
         .next = NULL,
@@ -37,7 +41,7 @@ chunk_t *chunk_new(int sz) {
     };
     
     // printf("counter %d", counter);
-    return &chunks[counter];
+    return &mman.chunks[chunk_idx];
 }
 
 void chunk_print(chunk_t *chunk_list) {
@@ -49,35 +53,24 @@ void chunk_print(chunk_t *chunk_list) {
     }
 }
 
-typedef struct _mman {
-    int initialized;
-    char *addr;
-    chunk_t *chunk_list;
-} mman_t;
-
-static mman_t mman;
-
 int init_alloc() {
     // void * mmap(void *__addr, size_t __len, int __prot, int __flags, int __fd, off_t __offset)
     static int __prot = PROT_READ | PROT_WRITE;
     static int __flags = MAP_PRIVATE | MAP_ANONYMOUS;
     mman.addr = mmap(NULL, PAGESIZE, __prot, __flags, -1, (off_t)0);
     mman.initialized = 1;
-    if (mman.addr == MAP_FAILED) {
-        perror("MAP_FAILED");
-        exit(1);
-    }
+    if (mman.addr == MAP_FAILED)
+        return -1;
     
-    chunk_t *chunk = chunk_new(PAGESIZE);
+    chunk_t *chunk = chunk_new(0, PAGESIZE);
     chunk->offset = 0;
 
-    mman.chunk_list = chunks;
+    mman.chunk_list = chunk;
     return 0;
 }
 
 /* Returns 0 if successful, -1 for errors */
 int cleanup() {
-    
     return munmap(mman.addr, PAGESIZE);
 }
 
@@ -85,9 +78,9 @@ char *alloc(int __size) {
     chunk_t *iter = mman.chunk_list;
 
     if (__size % MINALLOC != 0)
-        return (void *) -1;
+        return (char *) -1;
     if (__size < MINALLOC)
-        return (void *) -1;
+        return (char *) -1;
 
     
     for (; iter != NULL; iter = iter->next) {
@@ -98,7 +91,7 @@ char *alloc(int __size) {
         if (__size <= iter->sz) {
             if (iter->sz != __size) {
                 chunk_t *next = iter->next;
-                iter->next = chunk_new(iter->sz - __size);
+                iter->next = chunk_new(iter->offset + __size, iter->sz - __size);
                 if (next)
                     iter->next->next = next;
             }
@@ -120,39 +113,31 @@ char *alloc(int __size) {
 
 void dealloc(char *__ptr) {
     size_t offset = __ptr - mman.addr;
-    chunk_t *iter = mman.chunk_list;
+    chunk_t *victim = &mman.chunks[(offset / MINALLOC)];
 
-    for (; iter != NULL; iter = iter->next) {
-        if (iter->assigned == false) continue;
+    // 찾음
+    if (victim->offset == offset) {
+        chunk_t *piv = victim; // pivot
+        chunk_t *r_seeker = victim->next; // right seeker
+        chunk_t *l_seeker = victim->prev; // left seeker
 
-        // 찾음
-        if (iter->offset == offset) {
-            chunk_t *piv = iter; // pivot
-            chunk_t *r_seeker = iter->next; // right seeker
-            chunk_t *l_seeker = iter->prev; // left seeker
-
-            // merge piv and right
-            if (r_seeker != NULL && r_seeker->assigned == false) { // not assigned, needs merge
-                if (r_seeker->next)
-                    r_seeker->next->prev = piv;
-                
-                piv->next = r_seeker->next;
-                piv->sz += r_seeker->sz;
-                r_seeker->u = false;
-            }
-            piv->assigned = false;
-
-            // merge left and piv
-            if (l_seeker == NULL || l_seeker->assigned) break;
-
-            if (l_seeker->prev)
-                l_seeker->prev->next = piv;
+        // merge piv and right
+        if (r_seeker != NULL && r_seeker->assigned == false) { // not assigned, needs merge
+            if (r_seeker->next)
+                r_seeker->next->prev = piv;
             
-            l_seeker->next = piv->next;
-            l_seeker->sz += piv->sz;
-            piv->u = false;
-
-            return;
+            piv->next = r_seeker->next;
+            piv->sz += r_seeker->sz;
         }
+        piv->assigned = false;
+
+        // merge left and piv
+        if (l_seeker == NULL || l_seeker->assigned) return;
+
+        if (l_seeker->prev)
+            l_seeker->prev->next = piv;
+        
+        l_seeker->next = piv->next;
+        l_seeker->sz += piv->sz;
     }
 }
