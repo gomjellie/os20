@@ -42,15 +42,6 @@ chunk_t *chunk_new(size_t offset, int sz) {
     return &mman.chunks[chunk_idx];
 }
 
-void chunk_print(chunk_t *chunk_list) {
-    chunk_t *iter = chunk_list;
-    puts("----chunk print----");
-
-    for (; iter != NULL; iter = iter->next) {
-        printf("offset: %zu, sz: %d, assigned: %d\n", iter->offset, iter->sz, iter->assigned);
-    }
-}
-
 /* Returns 0 if successful, -1 for errors */
 int init_alloc() {
     static int __prot = PROT_READ | PROT_WRITE;

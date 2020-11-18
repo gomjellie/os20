@@ -23,8 +23,6 @@ typedef struct _chunkman {
     chunk_t chunks[CHUNK_BUF_SIZE];
 } chunkman_t;
 
-// static chunkman_t cman;
-
 typedef struct _mman {
     chunkman_t cmans[16];
     size_t sz;
@@ -49,22 +47,6 @@ chunk_t *chunk_new(size_t cmi, size_t offset, int sz) {
     };
     
     return &cman->chunks[chunk_idx];
-}
-
-void chunk_print(chunk_t *chunk_list) {
-    chunk_t *iter = chunk_list;
-    // puts("----chunk print----");
-
-    for (; iter != NULL; iter = iter->next) {
-        printf("offset: %zu, sz: %d, assigned: %d\n", iter->offset, iter->sz, iter->assigned);
-    }
-}
-
-void mman_print(mman_t *this) {
-    for (int i = 0; i < this->sz; i++) {
-        printf("---- cman[%d] print ----\n", i);
-        chunk_print(this->cmans[i].chunk_list);
-    }
 }
 
 void small_init_alloc(size_t cmi) {
