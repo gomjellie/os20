@@ -130,8 +130,8 @@ void dealloc(char *__ptr) {
     // merge left and piv
     if (l_seeker == NULL || l_seeker->assigned) return;
 
-    if (l_seeker->prev)
-        l_seeker->prev->next = piv;
+    if (piv->next)
+        piv->next->prev = l_seeker;
     
     l_seeker->next = piv->next;
     l_seeker->sz += piv->sz;
