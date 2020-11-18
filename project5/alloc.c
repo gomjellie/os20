@@ -17,7 +17,6 @@ typedef struct chunk {
 } chunk_t;
 
 typedef struct _mman {
-    int initialized;
     char *addr;
     chunk_t *chunk_list;
     chunk_t chunks[CHUNK_BUF_SIZE];
@@ -52,11 +51,11 @@ void chunk_print(chunk_t *chunk_list) {
     }
 }
 
+/* Returns 0 if successful, -1 for errors */
 int init_alloc() {
     static int __prot = PROT_READ | PROT_WRITE;
     static int __flags = MAP_PRIVATE | MAP_ANONYMOUS;
     mman.addr = mmap(NULL, PAGESIZE, __prot, __flags, -1, (off_t)0);
-    mman.initialized = 1;
     if (mman.addr == MAP_FAILED)
         return -1;
     
@@ -72,13 +71,14 @@ int cleanup() {
     return munmap(mman.addr, PAGESIZE);
 }
 
+/* Returns address if successful, NULL for errors */
 char *alloc(int __size) {
     chunk_t *iter = mman.chunk_list;
 
     if (__size % MINALLOC != 0)
-        return (char *) -1;
+        return NULL;
     if (__size < MINALLOC)
-        return (char *) -1;
+        return NULL;
 
     
     for (; iter != NULL; iter = iter->next) {
