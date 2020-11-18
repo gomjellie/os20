@@ -54,7 +54,6 @@ void chunk_print(chunk_t *chunk_list) {
 }
 
 int init_alloc() {
-    // void * mmap(void *__addr, size_t __len, int __prot, int __flags, int __fd, off_t __offset)
     static int __prot = PROT_READ | PROT_WRITE;
     static int __flags = MAP_PRIVATE | MAP_ANONYMOUS;
     mman.addr = mmap(NULL, PAGESIZE, __prot, __flags, -1, (off_t)0);
@@ -88,24 +87,24 @@ char *alloc(int __size) {
         if (iter->assigned) continue;
 
         // find first fit
-        if (__size <= iter->sz) {
-            if (iter->sz != __size) {
-                chunk_t *next = iter->next;
-                iter->next = chunk_new(iter->offset + __size, iter->sz - __size);
-                if (next)
-                    iter->next->next = next;
-            }
+        if (__size > iter->sz) continue;
 
-            if (iter->next) {
-                iter->next->offset = iter->offset + __size;
-                iter->next->prev = iter;
-            }
-            
-            iter->assigned = true;
-            iter->sz = __size;
-            
-            return mman.addr + iter->offset;
+        if (iter->sz != __size) {
+            chunk_t *next = iter->next;
+            iter->next = chunk_new(iter->offset + __size, iter->sz - __size);
+            if (next)
+                iter->next->next = next;
         }
+
+        if (iter->next) {
+            iter->next->offset = iter->offset + __size;
+            iter->next->prev = iter;
+        }
+        
+        iter->assigned = true;
+        iter->sz = __size;
+        
+        return mman.addr + iter->offset;
     }
 
     return NULL;
