@@ -65,14 +65,11 @@ void small_init_alloc(size_t cmi) {
 }
 
 void init_alloc(void) {
-    // small_init_alloc(0);
     mman.sz = 0;
 }
 
 void cleanup(void) {
-    for (int i = 0; i < mman.sz; i++) {
-        munmap(mman.cmans[i].addr, PAGESIZE);
-    }
+    mman.sz = 0;
 }
 
 /* Returns address if successful, NULL for errors */
