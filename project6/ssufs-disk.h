@@ -25,23 +25,23 @@
 
 struct superblock_t
 {
-	char name[MAX_NAME_STRLEN];
-	char inode_freelist[NUM_INODES];
-	char datablock_freelist[NUM_DATA_BLOCKS];
+    char name[MAX_NAME_STRLEN];
+    char inode_freelist[NUM_INODES];
+    char datablock_freelist[NUM_DATA_BLOCKS];
 };
 
 struct inode_t
 {
-	int status;
-	char name[MAX_NAME_STRLEN];
-	int file_size;
-	int direct_blocks[MAX_FILE_SIZE];
+    int status;
+    char name[MAX_NAME_STRLEN];
+    int file_size;
+    int direct_blocks[MAX_FILE_SIZE];
 };
 
 struct filehandle_t
 {
-	int offset;
-	int inode_number;
+    int offset;
+    int inode_number;
 };
 
 int open_namei(char *filename);
