@@ -74,7 +74,7 @@ int ssufs_read(int file_handle, char *buf, int nbytes){
         if (inode.direct_blocks[i] != -1)
             nblock_in_use ++;
     
-    if (nblock_in_use * 4 - file_handler->offset < nbytes)
+    if (BLOCKSIZE * nblock_in_use - file_handler->offset < nbytes)
         return -1;
 
     for (int read = 0; read < nbytes; ) {
@@ -89,7 +89,8 @@ int ssufs_read(int file_handle, char *buf, int nbytes){
             jump = nbytes - read;
         }
         memcpy(&buf[read], &tmp[off], jump);
-        ssufs_lseek(file_handle, jump);
+        if (ssufs_lseek(file_handle, jump) < 0) return -1;
+        
         read = read + jump;
     }
 
@@ -114,30 +115,30 @@ int ssufs_write(int file_handle, char *buf, int nbytes){
     if (BLOCKSIZE * 4 - file_handler->offset < nbytes)
         return -1;
     
-    for (int read = 0, i = 0; read < nbytes; i++) {
+    for (int write = 0; write < nbytes; ) {
         size_t block = file_handler->offset / BLOCKSIZE;
         size_t off = file_handler->offset % BLOCKSIZE;
         size_t jump = BLOCKSIZE - off;
         
-        blocknum = inode.direct_blocks[i];
+        blocknum = inode.direct_blocks[block];
         if (blocknum == -1) {
+            inode.file_size += BLOCKSIZE;
             blocknum = ssufs_allocDataBlock();
-            inode.direct_blocks[i] = blocknum;
+            inode.direct_blocks[block] = blocknum;
             ssufs_writeDataBlock(blocknum, clean_block);
         }
         ssufs_readDataBlock(blocknum, tmp);
         
-        if (jump > nbytes - read) {
-            jump = nbytes - read;
+        if (jump > nbytes - write) {
+            jump = nbytes - write;
         }
-        memcpy(&tmp[off], &buf[read], jump);
+        memcpy(&tmp[off], &buf[write], jump);
         ssufs_writeDataBlock(blocknum, tmp);
-        ssufs_lseek(file_handle, jump);
-        read = read + jump;
+        file_handler->offset += jump;
+        write = write + jump;
     }
 
     ssufs_writeInode(inodenum, &inode);
-    ssufs_lseek(file_handle, nbytes);
     return 0;
 }
 
