@@ -6,7 +6,7 @@ int ssufs_allocFileHandle() {
     for(int i = 0; i < MAX_OPEN_FILES; i++) {
         if (file_handle_array[i].inode_number == -1) {
             file_handle_array[i].inode_number = i; // 있어야 될거같은데 없어서 추가
-            // file_handle_array[i].offset = 0;
+            file_handle_array[i].offset = 0;
             return i;
         }
     }
@@ -90,7 +90,7 @@ int ssufs_read(int file_handle, char *buf, int nbytes){
         }
         memcpy(&buf[read], &tmp[off], jump);
         if (ssufs_lseek(file_handle, jump) < 0) return -1;
-        
+
         read = read + jump;
     }
 
@@ -124,6 +124,8 @@ int ssufs_write(int file_handle, char *buf, int nbytes){
         if (blocknum == -1) {
             inode.file_size += BLOCKSIZE;
             blocknum = ssufs_allocDataBlock();
+            if (blocknum == -1) return -1;
+            
             inode.direct_blocks[block] = blocknum;
             ssufs_writeDataBlock(blocknum, clean_block);
         }
