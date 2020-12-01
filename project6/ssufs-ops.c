@@ -82,24 +82,13 @@ int ssufs_read(int file_handle, char *buf, int nbytes){
 
     // test 시뮬레이션을 계산으로 대체해야됨
     
-    // for (int read = 0; read < nbytes; ) {
-    //     size_t block = file_handler->offset / BLOCKSIZE;
-    //     size_t off = file_handler->offset % BLOCKSIZE;
-    //     size_t jump = BLOCKSIZE - off;
-        
-    //     blocknum = inode.direct_blocks[block];
-    //     if (blocknum == -1) {
-    //         file_handler->inode_number = backup_inode_number;
-    //         file_handler->offset = backup_offset;
-    //         return -1;
-    //     }
-
-    //     if (jump > nbytes - read)
-    //         jump = nbytes - read;
-        
-    //     ssufs_lseek(file_handle, jump);
-    //     read = read + jump;
-    // }
+    int nblock_in_use = 0;
+    for (int i = 0; i < NUM_INODE_BLOCKS; i++)
+        if (inode.direct_blocks[i] != -1)
+            nblock_in_use ++;
+    
+    if (nblock_in_use * 4 - file_handler->offset < nbytes)
+        return -1;
 
     file_handler->inode_number = backup_inode_number;
     file_handler->offset = backup_offset;
