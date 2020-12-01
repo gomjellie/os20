@@ -14,7 +14,6 @@ int ssufs_allocFileHandle() {
 }
 
 int ssufs_create(char *filename){
-    /* 1 */
     int inode_idx = ssufs_allocInode();
     struct inode_t inode;
 
@@ -31,7 +30,6 @@ int ssufs_create(char *filename){
 }
 
 void ssufs_delete(char *filename){
-    /* 2 */
     int inode_idx = open_namei(filename);
     struct inode_t inode;
 
@@ -42,8 +40,6 @@ void ssufs_delete(char *filename){
 }
 
 int ssufs_open(char *filename){
-    /* 3 */
-
     int inode_idx = open_namei(filename);
     int offset;
 
@@ -59,16 +55,12 @@ void ssufs_close(int file_handle){
 }
 
 int ssufs_read(int file_handle, char *buf, int nbytes){
-    /* 4 */
     char tmp[BLOCKSIZE];
     struct inode_t inode;
     struct filehandle_t *file_handler = &file_handle_array[file_handle];
     int inodenum = file_handler->inode_number;
     int blocknum;
-    size_t sblock = file_handler->offset / BLOCKSIZE;
-    size_t soff = file_handler->offset % BLOCKSIZE;
-    // size_t fblock = 
-
+    
     if (inodenum == -1)
         return -1;
     
@@ -77,11 +69,6 @@ int ssufs_read(int file_handle, char *buf, int nbytes){
     if (inode.file_size < nbytes)
         return -1;
     
-    int backup_inode_number = file_handler->inode_number;
-    int backup_offset = file_handler->offset;
-
-    // test 시뮬레이션을 계산으로 대체해야됨
-    
     int nblock_in_use = 0;
     for (int i = 0; i < NUM_INODE_BLOCKS; i++)
         if (inode.direct_blocks[i] != -1)
@@ -89,9 +76,6 @@ int ssufs_read(int file_handle, char *buf, int nbytes){
     
     if (nblock_in_use * 4 - file_handler->offset < nbytes)
         return -1;
-
-    file_handler->inode_number = backup_inode_number;
-    file_handler->offset = backup_offset;
 
     for (int read = 0; read < nbytes; ) {
         size_t block = file_handler->offset / BLOCKSIZE;
@@ -113,7 +97,6 @@ int ssufs_read(int file_handle, char *buf, int nbytes){
 }
 
 int ssufs_write(int file_handle, char *buf, int nbytes){
-    /* 5 */
     static char clean_block[BLOCKSIZE];
     char tmp[BLOCKSIZE];
     struct inode_t inode;
